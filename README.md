@@ -14,15 +14,23 @@ ReviseLab is a Carbon-first preprint review workspace that helps researchers rev
 ## Quick start
 
 1. Install dependencies with `pnpm install`
-2. Run `pnpm dev:services` to start the local Supabase stack and the local GROBID service
-3. Copy the values from `supabase status -o env` into `apps/web/.env.local`
-4. Copy the same database and Supabase values into `apps/worker/.env`, and keep `GROBID_URL=http://127.0.0.1:8070`
-5. Run `pnpm dev:stack:check`
-6. Run `pnpm dev:web`
-7. Run `pnpm dev:worker`
-8. Optionally run `pnpm dev:extension`
+2. Run `pnpm dev:live` to start Supabase, GROBID, sync local env files, validate the stack, and run the web app plus worker
+3. Open the web URL printed by Next.js and sign in with a local magic link
+4. Use Inbucket at `http://127.0.0.1:54324` to open local magic links
+5. Optionally run `pnpm dev:extension`
 
-Local magic links are delivered to Inbucket at `http://127.0.0.1:54324`. Preview/sample routes still exist under `/preview/*`, but authenticated app routes now expect the live local or remote stack instead of falling back to mock data.
+`pnpm dev:services` still starts only Supabase and GROBID for focused backend work. It also syncs `apps/web/.env.local` and `apps/worker/.env.local` from the local Supabase stack without printing secrets. Preview/sample routes still exist under `/preview/*`, but authenticated app routes now expect the live local or remote stack instead of falling back to mock data.
+
+## Hosted Supabase dev mode
+
+When local Docker or slow wifi makes the full local stack painful, point `apps/web/.env.local` and `apps/worker/.env.local` at a hosted Supabase dev project and run:
+
+- `pnpm dev:hosted:check`
+- `pnpm dev:hosted`
+
+Hosted mode runs the local web app and local worker against the hosted Supabase project. Run the check command when you want to verify the remote database, buckets, and queues; `pnpm dev:hosted` itself starts the app without blocking on a slow network preflight. LaTeX ZIP parsing works without GROBID. PDF parsing still requires `GROBID_URL` to point at a reachable GROBID service, either local Docker once the image is cached or a hosted parser service later.
+
+For hosted mode, set `DATABASE_URL` to the Supabase **Session pooler** or **Transaction pooler** connection string, not the direct `db.<project>.supabase.co:5432` string. The direct hosted database endpoint can be IPv6-only and fail on networks without working IPv6.
 
 ## Guardrails
 
@@ -36,10 +44,16 @@ Local magic links are delivered to Inbucket at `http://127.0.0.1:54324`. Preview
 - `pnpm audit:repo`
 - `pnpm lint`
 - `pnpm clean`
+- `pnpm dev:hosted`
+- `pnpm dev:hosted:check`
+- `pnpm dev:live`
+- `pnpm dev:local:sync-env`
 - `pnpm dev:services`
 - `pnpm dev:stack:check`
 - `pnpm typecheck`
 - `pnpm test`
+- `pnpm test:hosted`
+- `pnpm test:live`
 - `pnpm build`
 - `pnpm test:visual`
 - `pnpm db:reset`

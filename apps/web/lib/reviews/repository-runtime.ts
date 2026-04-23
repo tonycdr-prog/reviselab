@@ -7,7 +7,11 @@ import {
   createSupabaseAdminClient,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
-import { getDatabaseUrl } from "@/lib/supabase/env";
+import {
+  getDatabaseUrl,
+  getHostedPoolerMessage,
+  isDirectHostedSupabaseDatabaseUrl,
+} from "@/lib/supabase/env";
 
 import { buildTelemetryEventId } from "./repository-helpers";
 
@@ -26,6 +30,10 @@ function createAdminSql() {
 
   if (!databaseUrl) {
     return null;
+  }
+
+  if (isDirectHostedSupabaseDatabaseUrl(databaseUrl)) {
+    throw new Error(getHostedPoolerMessage());
   }
 
   return postgres(databaseUrl, {

@@ -13,6 +13,11 @@ export type QueueMessage<T> = {
   message: T;
 };
 
+export type WorkerJobResult = {
+  shouldArchive: boolean;
+  summary?: string;
+};
+
 export type ParsePaperPayload = {
   paperId: string;
   versionId: string;

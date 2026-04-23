@@ -26,6 +26,29 @@ export function getDatabaseUrl() {
   return process.env.DATABASE_URL ?? null;
 }
 
+export function isDirectHostedSupabaseDatabaseUrl(
+  databaseUrl = getDatabaseUrl(),
+) {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(databaseUrl);
+    return (
+      parsed.hostname.startsWith("db.") &&
+      parsed.hostname.endsWith(".supabase.co") &&
+      parsed.port === "5432"
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function getHostedPoolerMessage() {
+  return "Hosted Supabase direct DATABASE_URL can resolve to IPv6-only Postgres on this network. Use the Supabase Dashboard connection string for the Session pooler or Transaction pooler as DATABASE_URL.";
+}
+
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

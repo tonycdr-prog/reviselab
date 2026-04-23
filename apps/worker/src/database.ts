@@ -3,8 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 import {
   getDatabaseUrl,
+  getHostedPoolerMessage,
   getSupabaseServiceRoleKey,
   getSupabaseUrl,
+  isDirectHostedSupabaseDatabaseUrl,
 } from "./env";
 
 export function createQueueSql() {
@@ -12,6 +14,10 @@ export function createQueueSql() {
 
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required to start the ReviseLab worker.");
+  }
+
+  if (isDirectHostedSupabaseDatabaseUrl(databaseUrl)) {
+    throw new Error(getHostedPoolerMessage());
   }
 
   return postgres(databaseUrl, {

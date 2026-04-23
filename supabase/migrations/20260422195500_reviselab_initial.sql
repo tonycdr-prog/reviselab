@@ -1,8 +1,9 @@
 create schema if not exists extensions;
+create schema if not exists pgmq;
 
 create extension if not exists pgcrypto with schema extensions;
 create extension if not exists vector with schema extensions;
-create extension if not exists pgmq with schema extensions;
+create extension if not exists pgmq with schema pgmq;
 create extension if not exists pg_cron with schema extensions;
 
 create or replace function public.set_updated_at()

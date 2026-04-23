@@ -1,9 +1,79 @@
 import { createQueueSql, createWorkerAdminClient } from "./database";
 import { getDatabaseUrl } from "./env";
+import {
+  getWorkerErrorMessage,
+  markParseJobAttemptsExhausted,
+  markReviewJobAttemptsExhausted,
+} from "./job-failures";
 import { parsePaperVersion } from "./paper-processing";
 import { archiveQueueMessage, readQueueMessage, wait } from "./queue";
 import { runReview } from "./review-processing";
-import type { ParsePaperPayload, RunReviewPayload } from "./types";
+import type {
+  ParsePaperPayload,
+  QueueMessage,
+  RunReviewPayload,
+  WorkerSql,
+} from "./types";
+
+const MAX_QUEUE_ATTEMPTS = 3;
+
+async function processParseJob(
+  adminClient: ReturnType<typeof createWorkerAdminClient>,
+  sql: WorkerSql,
+  job: QueueMessage<ParsePaperPayload> | null,
+) {
+  if (!job) {
+    return false;
+  }
+
+  try {
+    const result = await parsePaperVersion(adminClient, sql, job.message);
+    if (result.shouldArchive) {
+      await archiveQueueMessage(sql, "parse_paper", job.msg_id);
+    }
+    console.log(result.summary ?? `Handled parse job ${job.msg_id}`);
+  } catch (error) {
+    console.error("Parse job failed", error);
+    if (job.read_ct >= MAX_QUEUE_ATTEMPTS) {
+      await markParseJobAttemptsExhausted(adminClient, job.message, error);
+      await archiveQueueMessage(sql, "parse_paper", job.msg_id);
+      console.error(
+        `Archived exhausted parse job ${job.msg_id}: ${getWorkerErrorMessage(error)}`,
+      );
+    }
+  }
+
+  return true;
+}
+
+async function processReviewJob(
+  adminClient: ReturnType<typeof createWorkerAdminClient>,
+  sql: WorkerSql,
+  job: QueueMessage<RunReviewPayload> | null,
+) {
+  if (!job) {
+    return false;
+  }
+
+  try {
+    const result = await runReview(adminClient, job.message.reviewId);
+    if (result.shouldArchive) {
+      await archiveQueueMessage(sql, "run_review", job.msg_id);
+    }
+    console.log(result.summary ?? `Handled review job ${job.msg_id}`);
+  } catch (error) {
+    console.error("Review job failed", error);
+    if (job.read_ct >= MAX_QUEUE_ATTEMPTS) {
+      await markReviewJobAttemptsExhausted(adminClient, job.message, error);
+      await archiveQueueMessage(sql, "run_review", job.msg_id);
+      console.error(
+        `Archived exhausted review job ${job.msg_id}: ${getWorkerErrorMessage(error)}`,
+      );
+    }
+  }
+
+  return true;
+}
 
 async function main() {
   if (!getDatabaseUrl()) {
@@ -24,10 +94,7 @@ async function main() {
         "parse_paper",
       );
 
-      if (parseJob) {
-        await parsePaperVersion(adminClient, sql, parseJob.message);
-        await archiveQueueMessage(sql, "parse_paper", parseJob.msg_id);
-        console.log(`Parsed paper version ${parseJob.message.versionId}`);
+      if (await processParseJob(adminClient, sql, parseJob)) {
         continue;
       }
 
@@ -36,10 +103,7 @@ async function main() {
         "run_review",
       );
 
-      if (reviewJob) {
-        await runReview(adminClient, reviewJob.message.reviewId);
-        await archiveQueueMessage(sql, "run_review", reviewJob.msg_id);
-        console.log(`Processed review ${reviewJob.message.reviewId}`);
+      if (await processReviewJob(adminClient, sql, reviewJob)) {
         continue;
       }
 

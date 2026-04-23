@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+import { ensureDockerDaemonRunning } from "./local-stack-lib.mjs";
+
 const args = process.argv.slice(2);
 const isCi = process.env.CI === "true";
 
@@ -29,6 +31,17 @@ if (
 
   console.log(`Supabase CLI not found. Skipping: supabase ${args.join(" ")}`);
   process.exit(0);
+}
+
+try {
+  ensureDockerDaemonRunning();
+} catch (error) {
+  console.error(
+    error instanceof Error
+      ? error.message
+      : "Docker is required for Supabase local commands.",
+  );
+  process.exit(1);
 }
 
 const result = spawnSync("supabase", args, {

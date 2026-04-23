@@ -56,6 +56,46 @@ export function isLocalSupabaseUrl(url) {
   }
 }
 
+export function isHostedSupabaseUrl(url) {
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(".supabase.co");
+  } catch {
+    return false;
+  }
+}
+
+export function isDirectHostedSupabaseDatabaseUrl(databaseUrl) {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(databaseUrl);
+    return (
+      parsed.hostname.startsWith("db.") &&
+      parsed.hostname.endsWith(".supabase.co") &&
+      parsed.port === "5432"
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function getHostedPoolerMessage() {
+  return "Hosted Supabase direct DATABASE_URL can resolve to IPv6-only Postgres. Use the Supabase Dashboard connection string for the Session pooler or Transaction pooler as DATABASE_URL in apps/web/.env.local and apps/worker/.env.local.";
+}
+
+export function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 export function ensureDockerDaemonRunning() {
   const result = spawnSync("docker", ["info"], {
     cwd: ROOT,
@@ -72,8 +112,12 @@ export function ensureDockerDaemonRunning() {
   }
 
   const stderr = `${result.stderr ?? ""}${result.stdout ?? ""}`.trim();
+  const colimaHint = stderr.toLowerCase().includes("colima")
+    ? " Start Colima with `colima start`, then rerun the command."
+    : "";
+
   throw new Error(
-    stderr || "Docker is installed, but the Docker daemon is not running.",
+    `${stderr || "Docker is installed, but the Docker daemon is not running."}${colimaHint}`,
   );
 }
 
@@ -85,6 +129,7 @@ export async function wait(ms) {
 
 export async function waitForHttp(url, options) {
   const {
+    headers,
     label,
     timeoutMs = 120000,
     validate = (response, body) => response.ok && body.length > 0,
@@ -93,7 +138,7 @@ export async function waitForHttp(url, options) {
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { headers });
       const body = await response.text();
 
       if (validate(response, body)) {

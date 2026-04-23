@@ -10,19 +10,22 @@ import { appendWorkerReviewEvent } from "./review-events";
 import { persistReviewSnapshot } from "./review-snapshot-persistence";
 import { requireSupabaseResult } from "./supabase";
 import { recordUsageEvent } from "./telemetry";
-import type { WorkerAdminClient } from "./types";
+import type { WorkerAdminClient, WorkerJobResult } from "./types";
 
 export async function runReview(
   adminClient: WorkerAdminClient,
   reviewId: string,
-) {
+): Promise<WorkerJobResult> {
   const reviewRow = await requireSupabaseResult(
     adminClient.from("reviews").select("*").eq("id", reviewId).maybeSingle(),
     "Unable to load the review before processing.",
   );
 
   if (!reviewRow) {
-    return;
+    return {
+      shouldArchive: true,
+      summary: `Skipped missing review ${reviewId}`,
+    };
   }
 
   if (
@@ -30,7 +33,10 @@ export async function runReview(
     reviewRow.summary_json &&
     reviewRow.engine_version === REVIEW_ENGINE_VERSION
   ) {
-    return;
+    return {
+      shouldArchive: true,
+      summary: `Skipped already-ready review ${reviewId}`,
+    };
   }
 
   const loaded = await loadPaperVersion(
@@ -57,7 +63,10 @@ export async function runReview(
       kind: "review_failed",
       detail: "Paper version was not found.",
     });
-    return;
+    return {
+      shouldArchive: true,
+      summary: `Persisted missing-version failure for review ${reviewId}`,
+    };
   }
 
   const { paperRow, versionRow } = loaded;
@@ -184,6 +193,14 @@ export async function runReview(
       detail: message,
     });
 
-    throw error;
+    return {
+      shouldArchive: true,
+      summary: `Persisted review failure for ${reviewId}`,
+    };
   }
+
+  return {
+    shouldArchive: true,
+    summary: `Processed review ${reviewId}`,
+  };
 }

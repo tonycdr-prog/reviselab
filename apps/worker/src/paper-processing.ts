@@ -1,5 +1,6 @@
 import type { NormalizedManuscript } from "@reviselab/core";
 
+import { downloadSourceFile, uploadArtifact } from "./paper-files";
 import { parseLatexArchive, parsePdfWithGrobid } from "./parsers";
 import {
   buildFallbackSelectionManuscript,
@@ -9,62 +10,25 @@ import { enqueueRunReview } from "./queue";
 import { appendWorkerReviewEvent } from "./review-events";
 import { requireSupabaseResult } from "./supabase";
 import { recordUsageEvent } from "./telemetry";
-import type { ParsePaperPayload, WorkerAdminClient, WorkerSql } from "./types";
-
-async function downloadSourceFile(
-  adminClient: WorkerAdminClient,
-  sourcePath: string | null,
-) {
-  if (!sourcePath) {
-    return null;
-  }
-
-  const { data, error } = await adminClient.storage
-    .from("paper-sources")
-    .download(sourcePath);
-
-  if (error || !data) {
-    throw new Error(error?.message ?? "Unable to download source file.");
-  }
-
-  return data.arrayBuffer();
-}
-
-async function uploadArtifact(
-  adminClient: WorkerAdminClient,
-  paperId: string,
-  versionId: string,
-  manuscript: NormalizedManuscript,
-) {
-  const artifactPath = `${paperId}/${versionId}/normalized-manuscript.json`;
-
-  const { error } = await adminClient.storage.from("paper-artifacts").upload(
-    artifactPath,
-    new Blob([JSON.stringify(manuscript, null, 2)], {
-      type: "application/json",
-    }),
-    {
-      contentType: "application/json",
-      upsert: true,
-    },
-  );
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return artifactPath;
-}
+import type {
+  ParsePaperPayload,
+  WorkerAdminClient,
+  WorkerJobResult,
+  WorkerSql,
+} from "./types";
 
 export async function parsePaperVersion(
   adminClient: WorkerAdminClient,
   sql: WorkerSql,
   payload: ParsePaperPayload,
-) {
+): Promise<WorkerJobResult> {
   const loaded = await loadPaperVersion(adminClient, payload.versionId);
 
   if (!loaded) {
-    return;
+    return {
+      shouldArchive: true,
+      summary: `Skipped missing paper version ${payload.versionId}`,
+    };
   }
 
   const { paperRow, versionRow } = loaded;
@@ -82,7 +46,10 @@ export async function parsePaperVersion(
       await enqueueRunReview(sql, review.id);
     }
 
-    return;
+    return {
+      shouldArchive: true,
+      summary: `Queued reviews for already parsed version ${versionRow.id}`,
+    };
   }
 
   await requireSupabaseResult(
@@ -248,7 +215,10 @@ export async function parsePaperVersion(
       });
     }
 
-    throw error;
+    return {
+      shouldArchive: true,
+      summary: `Persisted parse failure for paper version ${versionRow.id}`,
+    };
   }
 
   try {
@@ -285,6 +255,14 @@ export async function parsePaperVersion(
       });
     }
 
-    throw error;
+    return {
+      shouldArchive: true,
+      summary: `Persisted review queue handoff failure for ${versionRow.id}`,
+    };
   }
+
+  return {
+    shouldArchive: true,
+    summary: `Parsed paper version ${versionRow.id}`,
+  };
 }

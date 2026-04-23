@@ -8,6 +8,7 @@ import {
   parseEnvBlock,
   waitForHttp,
 } from "./local-stack-lib.mjs";
+import { syncLocalEnv } from "./sync-local-env.mjs";
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -74,6 +75,8 @@ try {
     timeoutMs: 180000,
   });
 
+  const syncResult = syncLocalEnv();
+
   console.log("");
   console.log("Local live services are ready.");
   console.log(`- Supabase API: ${apiUrl}`);
@@ -83,10 +86,12 @@ try {
   console.log(`- Inbucket: ${LOCAL_INBUCKET_URL}`);
   console.log(`- GROBID: ${LOCAL_GROBID_URL}`);
   console.log("");
-  console.log("Copy the Supabase values from `supabase status -o env` into:");
+  console.log("Local env files synced without printing secrets.");
   console.log("- apps/web/.env.local");
-  console.log("- apps/worker/.env or apps/worker/.env.local");
-  console.log("Keep GROBID_URL=http://127.0.0.1:8070 for the worker.");
+  console.log("- apps/worker/.env.local");
+  if (syncResult.backups.length > 0) {
+    console.log("Remote-looking env files were backed up before local sync.");
+  }
 } catch (error) {
   console.error(
     error instanceof Error
