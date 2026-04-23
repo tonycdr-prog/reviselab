@@ -115,3 +115,29 @@ export async function uploadSource(env, path, body, contentType) {
     throw new Error(`Storage upload failed with ${response.status}.`);
   }
 }
+
+export async function deleteSource(env, path) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  try {
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/paper-sources/${encodedPath}`,
+      {
+        method: "DELETE",
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      },
+    );
+
+    if (!response.ok && response.status !== 404) {
+      console.warn(`Storage cleanup returned ${response.status}.`);
+    }
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? `Storage cleanup failed: ${error.message}`
+        : "Storage cleanup failed.",
+    );
+  }
+}

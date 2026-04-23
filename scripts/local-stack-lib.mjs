@@ -69,6 +69,19 @@ export function isHostedSupabaseUrl(url) {
   }
 }
 
+export function isLocalDatabaseUrl(databaseUrl) {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(databaseUrl);
+    return parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost";
+  } catch {
+    return false;
+  }
+}
+
 export function isDirectHostedSupabaseDatabaseUrl(databaseUrl) {
   if (!databaseUrl) {
     return false;
@@ -109,6 +122,10 @@ export function readHostedWebEnv() {
   assert(
     isHostedSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL),
     "apps/web/.env.local must point at hosted Supabase for hosted smoke tests.",
+  );
+  assert(
+    !isLocalDatabaseUrl(env.DATABASE_URL),
+    "apps/web/.env.local DATABASE_URL must point at hosted Supabase for hosted smoke tests.",
   );
   assert(
     !isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL),
