@@ -1,0 +1,2 @@
+-- Seed data should stay deterministic and safe to re-run.
+-- Add category seeds or local dev fixtures here when the data model needs them.

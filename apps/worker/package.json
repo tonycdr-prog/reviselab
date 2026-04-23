@@ -1,0 +1,24 @@
+{
+  "name": "@reviselab/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@reviselab/core": "workspace:*",
+    "@supabase/supabase-js": "^2.104.0",
+    "@unified-latex/unified-latex": "^1.8.4",
+    "jszip": "^3.10.1",
+    "kysely": "^0.28.16",
+    "kysely-postgres-js": "^3.0.0",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "lint": "node ../../scripts/check-guardrails.mjs --scope apps/worker",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

@@ -1,0 +1,2 @@
+create unique index if not exists extension_installations_paired_token_unique_idx
+on public.extension_installations(paired_token);

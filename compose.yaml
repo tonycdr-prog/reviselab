@@ -1,0 +1,7 @@
+services:
+  grobid:
+    image: grobid/grobid:0.8.2-crf
+    container_name: reviselab-grobid
+    ports:
+      - "8070:8070"
+    restart: unless-stopped

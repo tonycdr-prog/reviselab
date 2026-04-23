@@ -1,0 +1,27 @@
+name: Supabase
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: supabase/setup-cli@b579fc8c7122aa485f1d947120eaeb11ee04d312
+        with:
+          version: 2.90.0
+      - uses: pnpm/action-setup@c7b5fddd8f15dd22f2674df0b4b0b54b00d4cfe3
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: 24.14.0
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:reset
+      - run: pnpm db:test
+      - run: pnpm db:types:verify

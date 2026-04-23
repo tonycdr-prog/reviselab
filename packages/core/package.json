@@ -1,0 +1,16 @@
+{
+  "name": "@reviselab/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "node ../../scripts/check-guardrails.mjs --scope packages/core",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "diff": "^9.0.0"
+  }
+}

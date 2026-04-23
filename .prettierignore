@@ -1,0 +1,14 @@
+node_modules
+.next
+.wxt
+.output
+dist
+coverage
+playwright-report
+test-results
+.turbo
+.cache
+.vercel
+supabase/.temp
+pnpm-lock.yaml
+packages/core/src/generated

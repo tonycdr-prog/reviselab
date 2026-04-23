@@ -1,0 +1,12 @@
+{
+  "allowlist": [
+    {
+      "path": "packages/core/src/review.ts",
+      "reason": "Central review model and local review engine pending future extraction into narrower modules."
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "reason": "Lockfiles are expected to exceed the generic text-file size budget."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@reviselab/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./carbon": "./src/carbon/index.ts",
+    "./icons": "./src/icons/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "@carbon/icons-react": "^11.79.0",
+    "@carbon/react": "^1.106.0",
+    "@reviselab/core": "workspace:*",
+    "diff-match-patch-es": "^1.0.1",
+    "react": "^19.2.5",
+    "react-diff-view": "^3.3.3",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3"
+  },
+  "scripts": {
+    "lint": "node ../../scripts/check-guardrails.mjs --scope packages/ui",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

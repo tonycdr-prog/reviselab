@@ -1,0 +1,15 @@
+/.github/ @tonycdr-prog
+/RTK.md @tonycdr-prog
+/CONTRIBUTING.md @tonycdr-prog
+/README.md @tonycdr-prog
+/docs/ @tonycdr-prog
+/scripts/ @tonycdr-prog
+/package.json @tonycdr-prog
+/pnpm-workspace.yaml @tonycdr-prog
+/tsconfig.base.json @tonycdr-prog
+/apps/web/ @tonycdr-prog
+/apps/extension/ @tonycdr-prog
+/apps/worker/ @tonycdr-prog
+/packages/core/ @tonycdr-prog
+/packages/ui/ @tonycdr-prog
+/supabase/ @tonycdr-prog
