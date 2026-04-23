@@ -82,7 +82,7 @@ export async function sendMagicLink(formData: FormData) {
 
   redirect(
     `/auth/sign-in?next=${encodeURIComponent(nextPath)}&message=${encodeURIComponent(
-      "Check your inbox for the magic link.",
+      "Check your inbox for the newest magic link. Magic links are single use.",
     )}`,
   );
 }

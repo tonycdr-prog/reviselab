@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getAuthCallbackError } from "@/lib/auth/callback-error";
 import { normalizeNextPath } from "@/lib/auth/next-path";
 import { getViewerContext } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -8,16 +9,18 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const nextPath = normalizeNextPath(url.searchParams.get("next"));
-  const errorDescription =
-    url.searchParams.get("error_description") ?? url.searchParams.get("error");
+  const callbackError = getAuthCallbackError(url.searchParams);
 
-  if (errorDescription) {
-    return NextResponse.redirect(
-      new URL(
-        `/auth/sign-in?error=${encodeURIComponent(errorDescription)}`,
-        url.origin,
-      ),
-    );
+  if (callbackError) {
+    const signInUrl = new URL("/auth/sign-in", url.origin);
+    signInUrl.searchParams.set("next", nextPath);
+    signInUrl.searchParams.set("error", callbackError.message);
+
+    if (callbackError.code) {
+      signInUrl.searchParams.set("errorCode", callbackError.code);
+    }
+
+    return NextResponse.redirect(signInUrl);
   }
 
   const supabase = await createSupabaseServerClient();

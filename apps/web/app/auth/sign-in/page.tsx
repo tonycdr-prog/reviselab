@@ -22,14 +22,17 @@ type SignInPageProps = {
     next?: string;
     message?: string;
     error?: string;
+    errorCode?: string;
   }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const viewer = await getViewerContext();
   const providerAvailability = await getAuthProviderAvailability();
-  const { next, message, error } = await searchParams;
+  const { next, message, error, errorCode } = await searchParams;
   const nextPath = normalizeNextPath(next);
+  const errorTitle =
+    errorCode === "otp_expired" ? "Magic link expired" : "Sign-in problem";
 
   if (viewer) {
     redirect(nextPath as never);
@@ -70,7 +73,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                   <InlineNotification
                     lowContrast
                     kind="error"
-                    title="Sign-in problem"
+                    title={errorTitle}
                     subtitle={error}
                   />
                 ) : null}
@@ -81,7 +84,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                     id="email"
                     name="email"
                     labelText="Email"
-                    helperText="Use the email tied to your institution or research identity."
+                    helperText="Use the email tied to your institution or research identity. Magic links are single use."
                     placeholder="you@institution.edu"
                     type="email"
                     autoComplete="email"
