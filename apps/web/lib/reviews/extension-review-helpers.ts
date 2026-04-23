@@ -40,7 +40,7 @@ export async function enqueueRunReview(reviewId: string) {
   }
 
   try {
-    await sql`select pgmq.send('run_review', ${JSON.stringify({ reviewId })}::jsonb)`;
+    await sql`select pgmq.send('run_review'::text, ${JSON.stringify({ reviewId })}::jsonb)`;
   } finally {
     await sql.end();
   }

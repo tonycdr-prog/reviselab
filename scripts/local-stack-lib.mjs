@@ -96,6 +96,24 @@ export function assert(condition, message) {
   }
 }
 
+export function readHostedWebEnv() {
+  const env = readEnvFile("apps/web/.env.local");
+
+  assert(env, "apps/web/.env.local is missing.");
+  assert(env.NEXT_PUBLIC_SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL is missing.");
+  assert(
+    env.SUPABASE_SERVICE_ROLE_KEY,
+    "SUPABASE_SERVICE_ROLE_KEY is missing.",
+  );
+  assert(env.DATABASE_URL, "DATABASE_URL is missing.");
+  assert(
+    !isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL),
+    getHostedPoolerMessage(),
+  );
+
+  return env;
+}
+
 export function ensureDockerDaemonRunning() {
   const result = spawnSync("docker", ["info"], {
     cwd: ROOT,

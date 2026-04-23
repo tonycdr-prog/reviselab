@@ -1,5 +1,6 @@
 import { createQueueSql, createWorkerAdminClient } from "./database";
 import { getDatabaseUrl } from "./env";
+import { recordWorkerHeartbeat } from "./heartbeat";
 import {
   getWorkerErrorMessage,
   markParseJobAttemptsExhausted,
@@ -86,9 +87,12 @@ async function main() {
   const sql = createQueueSql();
   const adminClient = createWorkerAdminClient();
   console.log("ReviseLab worker started.");
+  await recordWorkerHeartbeat(adminClient, true);
 
   while (true) {
     try {
+      await recordWorkerHeartbeat(adminClient);
+
       const parseJob = await readQueueMessage<ParsePaperPayload>(
         sql,
         "parse_paper",

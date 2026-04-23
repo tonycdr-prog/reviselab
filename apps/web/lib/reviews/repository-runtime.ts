@@ -53,7 +53,7 @@ export async function enqueueJob(
   }
 
   try {
-    await sql`select pgmq.send(${queue}, ${JSON.stringify(payload)}::jsonb)`;
+    await sql`select pgmq.send(${queue}::text, ${JSON.stringify(payload)}::jsonb)`;
   } finally {
     await sql.end();
   }

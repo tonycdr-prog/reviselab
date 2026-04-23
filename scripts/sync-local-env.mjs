@@ -105,6 +105,7 @@ export function syncLocalEnv() {
       `SUPABASE_SERVICE_ROLE_KEY=${stackEnv.SERVICE_ROLE_KEY}`,
       `DATABASE_URL=${stackEnv.DATABASE_URL}`,
       "SUPABASE_ORCID_PROVIDER=custom:orcid",
+      `GROBID_URL=${LOCAL_GROBID_URL}`,
       "",
     ].join("\n"),
   );

@@ -26,6 +26,10 @@ export function getDatabaseUrl() {
   return process.env.DATABASE_URL ?? null;
 }
 
+export function getGrobidUrl() {
+  return process.env.GROBID_URL ?? null;
+}
+
 export function isDirectHostedSupabaseDatabaseUrl(
   databaseUrl = getDatabaseUrl(),
 ) {

@@ -30,6 +30,9 @@ export function AppHeader({
           <HeaderMenuItem href="/settings/integrations">
             Integrations
           </HeaderMenuItem>
+          <HeaderMenuItem href="/settings/diagnostics">
+            Diagnostics
+          </HeaderMenuItem>
           <HeaderMenuItem href={authHref}>{authLabel}</HeaderMenuItem>
         </HeaderNavigation>
       </Header>

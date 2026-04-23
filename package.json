@@ -27,6 +27,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "pnpm clean && pnpm -r --if-present lint && node ./scripts/check-guardrails.mjs",
+    "smoke:hosted": "node ./scripts/smoke-hosted-review.mjs",
+    "smoke:hosted:pdf": "node ./scripts/smoke-hosted-review.mjs --pdf --expect-failure",
     "test": "pnpm -r --if-present test",
     "test:hosted": "node ./scripts/check-supabase-stack.mjs --hosted && pnpm db:types:verify",
     "test:live": "node ./scripts/test-live-stack.mjs",

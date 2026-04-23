@@ -35,6 +35,14 @@ export type StoredReviewEventRow =
 export function getStoredReviewContext(
   context: StoredReviewRow["context_json"],
 ): SubmissionContext {
+  if (typeof context === "string") {
+    try {
+      return JSON.parse(context) as SubmissionContext;
+    } catch {
+      return getStoredReviewFallbackContext();
+    }
+  }
+
   return (
     (context as SubmissionContext | null) ?? getStoredReviewFallbackContext()
   );

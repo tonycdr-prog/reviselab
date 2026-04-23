@@ -120,6 +120,10 @@ try {
     "apps/web/.env.local DATABASE_URL does not match the local database URL.",
   );
   assert(
+    webEnv.GROBID_URL === LOCAL_GROBID_URL,
+    "apps/web/.env.local GROBID_URL must point to http://127.0.0.1:8070.",
+  );
+  assert(
     workerEnv.DATABASE_URL === stackEnv.DATABASE_URL,
     "Worker DATABASE_URL does not match the local database URL.",
   );

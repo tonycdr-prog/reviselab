@@ -6,6 +6,7 @@ import {
 } from "@reviselab/core";
 
 import { loadPaperVersion, loadParsedManuscript } from "./paper-version";
+import { getReviewContext } from "./review-context";
 import { appendWorkerReviewEvent } from "./review-events";
 import { persistReviewSnapshot } from "./review-snapshot-persistence";
 import { requireSupabaseResult } from "./supabase";
@@ -70,19 +71,7 @@ export async function runReview(
   }
 
   const { paperRow, versionRow } = loaded;
-  const context = (reviewRow.context_json as {
-    title: string;
-    abstract: string;
-    intendedCategory: string;
-    paperType: ReviewSnapshot["context"]["paperType"];
-    firstTimeSubmitter: boolean;
-  } | null) ?? {
-    title: paperRow.title,
-    abstract: "",
-    intendedCategory: paperRow.intended_category ?? "cs.AI",
-    paperType: paperRow.paper_type as ReviewSnapshot["context"]["paperType"],
-    firstTimeSubmitter: paperRow.first_time_submitter,
-  };
+  const context = getReviewContext(reviewRow.context_json, paperRow);
 
   const startedAt = nowIso();
 
