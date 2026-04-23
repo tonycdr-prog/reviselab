@@ -3,7 +3,11 @@ import "server-only";
 import postgres from "postgres";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { getDatabaseUrl } from "@/lib/supabase/env";
+import {
+  getDatabaseUrl,
+  getHostedPoolerMessage,
+  isDirectHostedSupabaseDatabaseUrl,
+} from "@/lib/supabase/env";
 
 type InstallationRecord = {
   id: string;
@@ -24,6 +28,10 @@ function createAdminSql() {
 
   if (!databaseUrl) {
     return null;
+  }
+
+  if (isDirectHostedSupabaseDatabaseUrl(databaseUrl)) {
+    throw new Error(getHostedPoolerMessage());
   }
 
   return postgres(databaseUrl, {

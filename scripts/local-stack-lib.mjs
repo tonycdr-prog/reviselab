@@ -107,6 +107,10 @@ export function readHostedWebEnv() {
   );
   assert(env.DATABASE_URL, "DATABASE_URL is missing.");
   assert(
+    isHostedSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL),
+    "apps/web/.env.local must point at hosted Supabase for hosted smoke tests.",
+  );
+  assert(
     !isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL),
     getHostedPoolerMessage(),
   );

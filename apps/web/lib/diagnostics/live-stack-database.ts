@@ -107,13 +107,13 @@ export async function checkDatabase(): Promise<DiagnosticCheck[]> {
           : "No worker heartbeat has been recorded yet.",
       },
     ];
-  } catch (error) {
+  } catch {
     return [
       {
         label: "Postgres",
         status: "error",
         detail:
-          error instanceof Error ? error.message : "Database check failed.",
+          "Database check failed. Verify DATABASE_URL, network access, and required Supabase migrations.",
       },
     ];
   } finally {
