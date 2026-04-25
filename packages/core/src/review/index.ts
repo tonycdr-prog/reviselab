@@ -4,5 +4,6 @@ export * from "./engine-sample";
 export * from "./lifecycle";
 export * from "./paper-metadata";
 export * from "./rules";
+export * from "./rules-catalog";
 export * from "./types";
 export * from "./utils";

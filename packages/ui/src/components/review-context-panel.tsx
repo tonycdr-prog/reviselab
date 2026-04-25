@@ -6,6 +6,18 @@ import type { ReviewContextPanelProps } from "./review-diff-shared";
 import { getSeverityTagType, getStatusTagType } from "./review-diff-shared";
 import { SuggestedTextEditor } from "./suggested-text-editor";
 
+function getReadinessImpact(severity: "blocker" | "warning" | "info") {
+  if (severity === "blocker") {
+    return "Blocks readiness until resolved.";
+  }
+
+  if (severity === "warning") {
+    return "Keeps the review in Ready with revisions unless a blocker exists.";
+  }
+
+  return "Informational; does not reduce readiness.";
+}
+
 export function ReviewContextPanel({
   file,
   activeSuggestion,
@@ -57,6 +69,25 @@ export function ReviewContextPanel({
               ? selectedContext.item.detail
               : selectedContext.item.target}
           </p>
+          {selectedContext.type === "check" ? (
+            <dl className="rl-rule-meta">
+              <div>
+                <dt>Rule</dt>
+                <dd>
+                  {selectedContext.item.ruleId} ·{" "}
+                  {selectedContext.item.ruleVersion}
+                </dd>
+              </div>
+              <div>
+                <dt>Source checked</dt>
+                <dd>{selectedContext.item.sourceCheckedAt}</dd>
+              </div>
+              <div>
+                <dt>Readiness impact</dt>
+                <dd>{getReadinessImpact(selectedContext.item.severity)}</dd>
+              </div>
+            </dl>
+          ) : null}
           {selectedContext.type === "check" ||
           selectedContext.item.sourceUrl ? (
             <Link
@@ -73,14 +104,26 @@ export function ReviewContextPanel({
           ) : null}
           {selectedContext.type === "check" &&
           (selectedContext.item.evidence?.length ?? 0) > 0 ? (
-            <ul className="rl-summary-list">
-              {selectedContext.item.evidence.map((evidence) => (
-                <li key={`${evidence.label}_${evidence.value}`}>
-                  <strong>{evidence.label}</strong>
-                  <p className="rl-muted">{evidence.value}</p>
-                </li>
-              ))}
-            </ul>
+            <>
+              <h4>Why this was flagged</h4>
+              <ul className="rl-summary-list">
+                {selectedContext.item.evidence.map((evidence) => (
+                  <li key={`${evidence.label}_${evidence.value}`}>
+                    <strong>{evidence.label}</strong>
+                    <p className="rl-muted">{evidence.value}</p>
+                    {evidence.sourceUrl ? (
+                      <Link
+                        href={evidence.sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Evidence source
+                      </Link>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </>
           ) : null}
         </Tile>
       ) : null}

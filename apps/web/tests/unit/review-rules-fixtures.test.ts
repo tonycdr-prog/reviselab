@@ -1,54 +1,14 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  generateReviewSnapshot,
-  type ReviewInput,
-  type ReviewSnapshot,
-} from "@reviselab/core";
-
-const baseInput: ReviewInput = {
-  paperId: "paper_rule_fixture",
-  versionId: "version_rule_fixture",
-  title: "A Benchmark for Retrieval-Augmented Review Assistants",
-  abstract:
-    "We evaluate retrieval-augmented review assistants for scientific writing review. The benchmark compares category fit, tone calibration, policy-aware revision suggestions, and reviewer-facing evidence across realistic abstract editing tasks.",
-  intendedCategory: "cs.AI",
-  paperType: "research",
-  firstTimeSubmitter: false,
-  sourceKind: "latex-zip",
-  comments: "12 pages, 3 figures.",
-};
-
-function review(overrides: Partial<ReviewInput> = {}) {
-  return generateReviewSnapshot({
-    ...baseInput,
-    ...overrides,
-  });
-}
-
-function checkFor(snapshot: ReviewSnapshot, ruleId: string) {
-  const check = snapshot.checks.find((item) => item.ruleId === ruleId);
-
-  expect(check, `Expected ${ruleId} to produce a check`).toBeDefined();
-  return check!;
-}
-
-function expectTraceable(snapshot: ReviewSnapshot, ruleId: string) {
-  const check = checkFor(snapshot, ruleId);
-
-  expect(check.ruleVersion).toMatch(/^\d{4}\.\d{2}\.\d{2}\.\d+\./);
-  expect(check.sourceUrl).toMatch(/^https:\/\//);
-  expect(check.sourceCheckedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  expect(check.evidence.length).toBeGreaterThan(0);
-  expect(check.reviewFilePath).toBeTruthy();
-  expect(check.anchorId).toBeTruthy();
-
-  return check;
-}
+  baseRuleFixtureInput,
+  expectTraceableRule,
+  reviewRuleFixture,
+} from "./review-rules-fixtures-helpers";
 
 describe("deterministic readiness rule fixtures", () => {
   test("CS/AI research fixture keeps blocking rules clear", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       firstTimeSubmitter: true,
       hasInstitutionalEmail: true,
       priorArxivAuthorship: true,
@@ -58,20 +18,20 @@ describe("deterministic readiness rule fixtures", () => {
     });
 
     expect(snapshot.readiness).not.toBe("High submission risk");
-    expect(expectTraceable(snapshot, "category-fit").state).toBe("pass");
-    expect(expectTraceable(snapshot, "paper-type-risk").state).toBe("pass");
-    expect(expectTraceable(snapshot, "endorsement-guidance").state).toBe(
+    expect(expectTraceableRule(snapshot, "category-fit").state).toBe("pass");
+    expect(expectTraceableRule(snapshot, "paper-type-risk").state).toBe("pass");
+    expect(expectTraceableRule(snapshot, "endorsement-guidance").state).toBe(
       "pass",
     );
   });
 
   test("category-fit writes category warnings to metadata.yml", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       intendedCategory: "cs.AI",
       abstract:
         "We study machine learning training, optimization, supervised learning, unsupervised learning, generalization, and benchmark design for model evaluation.",
     });
-    const check = expectTraceable(snapshot, "category-fit");
+    const check = expectTraceableRule(snapshot, "category-fit");
 
     expect(check.state).toBe("warn");
     expect(check.reviewFilePath).toBe("metadata.yml");
@@ -86,13 +46,16 @@ describe("deterministic readiness rule fixtures", () => {
   });
 
   test("review-like CS papers block without peer-review evidence", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       title: "A Survey of Retrieval-Augmented Review Assistants",
       paperType: "survey",
       abstract:
         "This survey reviews retrieval augmented review assistants and summarizes artificial intelligence systems for manuscript preparation.",
     });
-    const check = expectTraceable(snapshot, "cs-review-survey-position-risk");
+    const check = expectTraceableRule(
+      snapshot,
+      "cs-review-survey-position-risk",
+    );
 
     expect(snapshot.readiness).toBe("High submission risk");
     expect(check.state).toBe("fail");
@@ -101,7 +64,7 @@ describe("deterministic readiness rule fixtures", () => {
   });
 
   test("review-like CS papers pass when DOI and venue evidence are present", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       paperType: "review",
       peerReviewedVenue: "Proceedings of Example AI",
       journalRef: "Example AI 2026",
@@ -110,30 +73,30 @@ describe("deterministic readiness rule fixtures", () => {
     });
 
     expect(
-      expectTraceable(snapshot, "cs-review-survey-position-risk").state,
+      expectTraceableRule(snapshot, "cs-review-survey-position-risk").state,
     ).toBe("pass");
   });
 
   test("first-time submitters warn without endorsement path evidence", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       firstTimeSubmitter: true,
       hasInstitutionalEmail: false,
       priorArxivAuthorship: false,
       hasPersonalEndorser: false,
     });
-    const check = expectTraceable(snapshot, "endorsement-guidance");
+    const check = expectTraceableRule(snapshot, "endorsement-guidance");
 
     expect(check.state).toBe("warn");
     expect(check.detail).toContain("institutional email");
   });
 
   test("metadata blockers carry source-backed evidence", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       title: "",
       abstract: "",
       intendedCategory: "",
     });
-    const check = expectTraceable(snapshot, "missing-metadata");
+    const check = expectTraceableRule(snapshot, "missing-metadata");
 
     expect(check.state).toBe("fail");
     expect(check.severity).toBe("blocker");
@@ -143,11 +106,11 @@ describe("deterministic readiness rule fixtures", () => {
   });
 
   test("AI disclosure warnings stay in submission notes", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       aiAssistanceUsed: true,
       comments: "12 pages.",
     });
-    const check = expectTraceable(snapshot, "ai-disclosure-risk");
+    const check = expectTraceableRule(snapshot, "ai-disclosure-risk");
 
     expect(check.state).toBe("warn");
     expect(check.reviewFilePath).toBe("submission_notes.md");
@@ -155,12 +118,12 @@ describe("deterministic readiness rule fixtures", () => {
   });
 
   test("overclaiming warnings link to an abstract anchor", () => {
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       title: "The Best Guaranteed Benchmark for Review Assistants",
       abstract:
         "We prove this groundbreaking system is the best and guarantees state-of-the-art outcomes for every scientific writing task.",
     });
-    const check = expectTraceable(snapshot, "overclaiming");
+    const check = expectTraceableRule(snapshot, "overclaiming");
 
     expect(check.state).toBe("warn");
     expect(check.reviewFilePath).toBe("abstract.md");
@@ -176,11 +139,11 @@ describe("deterministic readiness rule fixtures", () => {
       "The parser found structure, metadata, and references while preserving diagnostics.",
       "The review should proceed but keep arXiv source-package warnings visible.",
     ].join(" ");
-    const snapshot = review({
+    const snapshot = reviewRuleFixture({
       manuscript: {
         sourceKind: "latex-zip",
-        title: baseInput.title,
-        abstract: baseInput.abstract,
+        title: baseRuleFixtureInput.title,
+        abstract: baseRuleFixtureInput.abstract,
         authors: [{ name: "A. Researcher" }],
         sections: [{ title: "Introduction", level: 1, text: rawText }],
         references: ["Example reference"],
@@ -188,7 +151,7 @@ describe("deterministic readiness rule fixtures", () => {
         parseDiagnostics: ["missing main.tex at the zip root"],
       },
     });
-    const check = expectTraceable(snapshot, "source-pdf-parse-readiness");
+    const check = expectTraceableRule(snapshot, "source-pdf-parse-readiness");
 
     expect(check.state).toBe("warn");
     expect(check.sourceUrl).toContain("submit_tex");

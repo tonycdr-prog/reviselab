@@ -1,0 +1,55 @@
+name: Hosted smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_pdf:
+        description: "Run the PDF/GROBID hosted smoke test"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: pnpm/action-setup@c7b5fddd8f15dd22f2674df0b4b0b54b00d4cfe3
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: 24.14.0
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Write hosted env files
+        run: |
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
+            echo "DATABASE_URL=${DATABASE_URL}"
+          } > apps/web/.env.local
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
+            echo "DATABASE_URL=${DATABASE_URL}"
+            echo "GROBID_URL=${GROBID_URL}"
+          } > apps/worker/.env.local
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GROBID_URL: ${{ secrets.GROBID_URL }}
+      - run: pnpm prod:check
+      - run: pnpm dev:hosted:check
+      - run: pnpm smoke:hosted
+      - if: ${{ inputs.include_pdf == 'true' }}
+        run: pnpm smoke:hosted:pdf

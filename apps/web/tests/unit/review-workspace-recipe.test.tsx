@@ -85,6 +85,32 @@ describe("ReviewWorkspaceRecipe", () => {
     ).toBeInTheDocument();
   });
 
+  test("shows source-backed rule evidence in the context inspector", () => {
+    const review = createSampleReview();
+    const categoryCheck = review.checks.find(
+      (check) => check.ruleId === "category-fit",
+    );
+
+    if (!categoryCheck?.anchorId || !categoryCheck.reviewFilePath) {
+      throw new Error("Category check target not found.");
+    }
+
+    render(
+      <ReviewWorkspaceRecipe
+        review={review}
+        selectedTab="files"
+        selectedFilePath={categoryCheck.reviewFilePath}
+        selectedAnchorId={categoryCheck.anchorId}
+        selectedContext={{ type: "check", id: categoryCheck.id }}
+      />,
+    );
+
+    expect(screen.getByText("Why this was flagged")).toBeInTheDocument();
+    expect(screen.getByText("Readiness impact")).toBeInTheDocument();
+    expect(screen.getByText("Source checked")).toBeInTheDocument();
+    expect(screen.getByText(categoryCheck.sourceCheckedAt)).toBeInTheDocument();
+  });
+
   test("applies the latest draft from the inspector action area", () => {
     const review = createSampleReview();
     const onSuggestionAction = vi.fn();

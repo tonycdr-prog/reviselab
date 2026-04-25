@@ -78,6 +78,106 @@
       "expectedParse": "parsed",
       "expectedReadiness": null,
       "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-1706-03762.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-1810-04805.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2005-14165.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2010-11929.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2103-00020.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2106-09685.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2006-11239.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2112-10752.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2201-11903.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "real/arxiv-2305-14314.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
     }
   ]
 }
