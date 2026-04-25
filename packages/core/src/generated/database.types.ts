@@ -81,23 +81,25 @@ export type Database = {
           updated_at: string;
         };
       };
-      review_checks: {
-        Row: {
-          anchor_id: string | null;
-          created_at: string;
-          detail: string;
-          id: string;
-          linked_suggestion_ids_json: Json;
-          name: string;
-          review_file_id: string | null;
-          review_id: string;
-          rule_id: string;
-          rule_version: string;
-          severity: string;
-          source_url: string;
-          state: string;
-          summary: string;
-        };
+	      review_checks: {
+	        Row: {
+	          anchor_id: string | null;
+	          created_at: string;
+	          detail: string;
+	          evidence_json: Json;
+	          id: string;
+	          linked_suggestion_ids_json: Json;
+	          name: string;
+	          review_file_id: string | null;
+	          review_id: string;
+	          rule_id: string;
+	          rule_version: string;
+	          severity: string;
+	          source_checked_at: string;
+	          source_url: string;
+	          state: string;
+	          summary: string;
+	        };
       };
       review_comments: {
         Row: {

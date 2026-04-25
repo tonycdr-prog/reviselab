@@ -92,6 +92,100 @@ describe("SuggestedTextEditor", () => {
     );
   });
 
+  test("keeps generic restore available for a saved deterministic draft", async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+
+    render(
+      <SuggestedTextEditor
+        suggestion={{
+          ...suggestion,
+          origin: "rules",
+          status: "edited",
+          editedText: "Saved metadata edit",
+        }}
+        onRestore={onRestore}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Restore suggestion" }),
+    );
+
+    expect(onRestore).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Suggested revision")).toHaveValue(
+      "Suggested abstract",
+    );
+  });
+
+  test("shows a restore-only state after an AI suggestion is accepted", async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+
+    render(
+      <SuggestedTextEditor
+        suggestion={{
+          ...suggestion,
+          status: "accepted",
+        }}
+        onRestore={onRestore}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Apply suggestion" })).toBe(
+      null,
+    );
+    expect(screen.queryByRole("button", { name: "Reject" })).toBe(null);
+    expect(screen.queryByRole("button", { name: "Mark resolved" })).toBe(null);
+    expect(
+      screen.getByText(
+        "Suggestion accepted. Restore it to reopen review actions.",
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Restore AI suggestion" }),
+    );
+
+    expect(onRestore).toHaveBeenCalledTimes(1);
+  });
+
+  test("shows a generic restore action for resolved deterministic suggestions", () => {
+    render(
+      <SuggestedTextEditor
+        suggestion={{
+          ...suggestion,
+          origin: "rules",
+          status: "resolved",
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Apply suggestion" })).toBe(
+      null,
+    );
+    expect(
+      screen.getByRole("button", { name: "Restore suggestion" }),
+    ).toBeInTheDocument();
+  });
+
+  test("removes the AI visual state while a manual draft is active", async () => {
+    const user = userEvent.setup();
+
+    render(<SuggestedTextEditor suggestion={suggestion} />);
+
+    const textarea = screen.getByLabelText("Suggested revision");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited abstract");
+
+    expect(
+      screen.queryByText("Generated from the title and abstract."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Restore AI suggestion" }),
+    ).toBeInTheDocument();
+  });
+
   test("resets the draft when the selected suggestion changes", async () => {
     const user = userEvent.setup();
     const nextSuggestion: ReviewSuggestion = {

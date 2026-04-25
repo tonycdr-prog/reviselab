@@ -1,8 +1,28 @@
 @import "react-diff-view/style/index.css";
 @import "./layout.css";
+@import "./review-diff.css";
+@import "./app-surfaces.css";
+@import "./public-landing.css";
+@import "./public-landing-bento.css";
+@import "./public-landing-workflow.css";
 
 :root {
   color-scheme: light;
+  --font-ibm-plex-sans: "IBM Plex Sans";
+  --font-ibm-plex-mono: "IBM Plex Mono";
+  --cds-spacing-01: 0.125rem;
+  --cds-spacing-02: 0.25rem;
+  --cds-spacing-03: 0.5rem;
+  --cds-spacing-04: 0.75rem;
+  --cds-spacing-05: 1rem;
+  --cds-spacing-06: 1.5rem;
+  --cds-spacing-07: 2rem;
+  --cds-spacing-08: 2.5rem;
+  --cds-spacing-09: 3rem;
+  --cds-spacing-10: 4rem;
+  --cds-spacing-11: 5rem;
+  --cds-spacing-12: 6rem;
+  --cds-spacing-13: 10rem;
 }
 
 html,
@@ -24,6 +44,7 @@ a {
 .rl-page {
   min-block-size: 100vh;
   background: var(--cds-background);
+  overflow-x: clip;
 }
 
 .rl-main {
@@ -31,6 +52,8 @@ a {
 }
 
 .rl-page-grid {
+  max-inline-size: 99rem;
+  margin-inline: auto;
   row-gap: var(--cds-spacing-06);
 }
 
@@ -80,11 +103,15 @@ a {
 }
 
 .rl-dashboard-toolbar {
+  min-block-size: auto;
   padding-block: var(--cds-spacing-05);
+  padding-inline: var(--cds-spacing-05);
 }
 
 .rl-dashboard-toolbar-content {
+  box-sizing: border-box;
   display: grid;
+  block-size: auto;
   inline-size: 100%;
   gap: var(--cds-spacing-05);
   align-items: end;
@@ -133,6 +160,15 @@ a {
 .rl-signin-card {
   max-inline-size: 32rem;
   margin-inline: auto;
+}
+
+.rl-signin-card .cds--btn,
+.rl-signin-card form {
+  inline-size: 100%;
+}
+
+.rl-signin-card .cds--btn {
+  max-inline-size: none;
 }
 
 .rl-extension-panel {

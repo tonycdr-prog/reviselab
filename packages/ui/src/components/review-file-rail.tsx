@@ -62,17 +62,14 @@ export function ReviewFileRail({
         </p>
       </div>
 
-      <div
-        className="rl-file-rail-list"
-        role="listbox"
-        aria-label="Review files changed"
-      >
+      <nav className="rl-file-rail-list" aria-label="Review files changed">
         {files.map((file, index) => (
           <button
             key={file.id}
             type="button"
-            role="option"
-            aria-selected={file.path === selectedFilePath}
+            aria-current={
+              file.path === selectedFilePath ? "location" : undefined
+            }
             data-index={index}
             tabIndex={file.path === selectedFilePath ? 0 : -1}
             ref={(node) => {
@@ -109,7 +106,7 @@ export function ReviewFileRail({
             </div>
           </button>
         ))}
-      </div>
+      </nav>
     </aside>
   );
 }

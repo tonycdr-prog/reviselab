@@ -52,6 +52,52 @@ function selectMainTexFile(zip: JSZip) {
   );
 }
 
+function collectLatexDiagnostics(
+  zip: JSZip,
+  mainTexFile: string,
+  source: string,
+) {
+  const diagnostics = [`Parsed ${mainTexFile} with Unified LaTeX.`];
+  const fileNames = Object.keys(zip.files).filter(
+    (fileName) => !fileName.startsWith("__MACOSX/"),
+  );
+  const hasBibliographyCommand = /\\(?:bibliography|addbibresource)\b/i.test(
+    source,
+  );
+  const hasBibliographyFile = fileNames.some((fileName) =>
+    /\.(bib|bbl)$/i.test(fileName),
+  );
+  const hasUnsupportedFigure = fileNames.some((fileName) =>
+    /\.(eps|ps)$/i.test(fileName),
+  );
+
+  if (mainTexFile.includes("/")) {
+    diagnostics.push(
+      "Main TeX file is not at the ZIP root; verify the archive layout before arXiv submission.",
+    );
+  }
+
+  if (hasBibliographyCommand && !hasBibliographyFile) {
+    diagnostics.push(
+      "Bibliography command found, but no .bib or .bbl file was found in the ZIP.",
+    );
+  }
+
+  if (hasUnsupportedFigure) {
+    diagnostics.push(
+      "EPS or PostScript figures were found; verify arXiv-compatible figure conversion.",
+    );
+  }
+
+  if (/\\usepackage(?:\[[^\]]*\])?\{hyperref\}/i.test(source)) {
+    diagnostics.push(
+      "Hyperref package found; compile the source against arXiv's TeX environment before submission.",
+    );
+  }
+
+  return diagnostics;
+}
+
 export async function parseLatexArchive(
   fileBuffer: ArrayBuffer,
 ): Promise<ParseResult> {
@@ -72,6 +118,7 @@ export async function parseLatexArchive(
 
   const title = extractCommandValue(source, "title") ?? "Untitled manuscript";
   const abstract = extractAbstract(source) ?? "";
+  const diagnostics = collectLatexDiagnostics(zip, mainTexFile, source);
 
   return {
     parserEngine: "unified-latex",
@@ -83,7 +130,7 @@ export async function parseLatexArchive(
       sections: extractSections(source),
       references: [],
       rawText: stripLatex(source),
-      parseDiagnostics: [`Parsed ${mainTexFile} with Unified LaTeX.`],
+      parseDiagnostics: diagnostics,
     },
   };
 }

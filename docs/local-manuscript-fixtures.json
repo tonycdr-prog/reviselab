@@ -1,0 +1,83 @@
+{
+  "fixtureDirectory": ".local-manuscripts",
+  "fixtures": [
+    {
+      "fileName": "reviselab-smoke-latex.zip",
+      "sourceKind": "latex-zip",
+      "required": true,
+      "generated": true,
+      "requiresGrobid": false,
+      "expectedParse": "parsed",
+      "expectedReadiness": "Ready with revisions",
+      "expectedRuleHits": [
+        "category-fit",
+        "endorsement-guidance",
+        "overclaiming"
+      ]
+    },
+    {
+      "fileName": "reviselab-smoke-machine-readable.pdf",
+      "sourceKind": "pdf",
+      "required": true,
+      "generated": true,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": "Ready with revisions",
+      "expectedRuleHits": [
+        "category-fit",
+        "endorsement-guidance",
+        "overclaiming"
+      ]
+    },
+    {
+      "fileName": "reviselab-smoke-unreadable.pdf",
+      "sourceKind": "pdf",
+      "required": true,
+      "generated": true,
+      "requiresGrobid": true,
+      "expectedParse": "failed",
+      "expectedReadiness": null,
+      "expectedRuleHits": ["source-pdf-parse-readiness"]
+    },
+    {
+      "fileName": "reviselab-smoke-broken-latex.zip",
+      "sourceKind": "latex-zip",
+      "required": true,
+      "generated": true,
+      "requiresGrobid": false,
+      "expectedParse": "failed",
+      "expectedReadiness": null,
+      "expectedRuleHits": ["source-pdf-parse-readiness"]
+    },
+    {
+      "fileName": "arxiv-1706.03762-attention-is-all-you-need.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "arxiv-1706.03762-attention-source.zip",
+      "sourceKind": "latex-zip",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": false,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    },
+    {
+      "fileName": "arxiv-1201.0490-scikit-learn.pdf",
+      "sourceKind": "pdf",
+      "required": false,
+      "generated": false,
+      "requiresGrobid": true,
+      "expectedParse": "parsed",
+      "expectedReadiness": null,
+      "expectedRuleHits": []
+    }
+  ]
+}

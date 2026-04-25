@@ -2,54 +2,19 @@ import "server-only";
 
 import { nowIso } from "@reviselab/core";
 
-import { hasDatabaseConfig, hasSupabaseConfig } from "@/lib/supabase/env";
-
 import { appendReviewEvent } from "./repository-events";
 import { getReviewById } from "./repository-review-read";
+import {
+  assertLiveReviewRuntimeReady,
+  clearReviewArtifacts,
+  failParseRetryAfterQueueError,
+  failReviewRetryAfterQueueError,
+} from "./repository-review-retry-helpers";
 import {
   enqueueJob,
   getSupabaseStorageAdminClient,
   requireAuthenticatedContext,
 } from "./repository-runtime";
-
-type AuthenticatedReviewContext = NonNullable<
-  Awaited<ReturnType<typeof requireAuthenticatedContext>>
->;
-
-function assertLiveReviewRuntimeReady() {
-  if (!hasSupabaseConfig() || !hasDatabaseConfig()) {
-    throw new Error(
-      "ReviseLab live mode requires the local or remote Supabase stack and queue database to be configured.",
-    );
-  }
-}
-
-async function clearReviewArtifacts(
-  supabase: AuthenticatedReviewContext["supabase"],
-  reviewIds: string[],
-) {
-  if (reviewIds.length === 0) {
-    return;
-  }
-
-  const tables = [
-    "review_comments",
-    "review_checks",
-    "review_suggestions",
-    "review_files",
-  ] as const;
-
-  for (const table of tables) {
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .in("review_id", reviewIds);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-}
 
 export async function retryReview(reviewId: string) {
   assertLiveReviewRuntimeReady();
@@ -156,29 +121,12 @@ export async function retryReview(reviewId: string) {
 
     if (!wasQueued) {
       const queueFailureMessage = "The review worker queue is unavailable.";
-      const { error: versionRollbackError } = await auth.supabase
-        .from("paper_versions")
-        .update({
-          parse_status: "failed",
-          parse_error: queueFailureMessage,
-        })
-        .eq("id", versionRow.id);
-      const { error: reviewsRollbackError } = await auth.supabase
-        .from("reviews")
-        .update({
-          status: "failed",
-          failed_reason: queueFailureMessage,
-          updated_at: nowIso(),
-        })
-        .in("id", retryReviewIds);
-
-      if (versionRollbackError || reviewsRollbackError) {
-        throw new Error(
-          `${queueFailureMessage} Failed to restore failure state: ${
-            versionRollbackError?.message ?? reviewsRollbackError?.message
-          }`,
-        );
-      }
+      await failParseRetryAfterQueueError(
+        auth,
+        versionRow.id,
+        retryReviewIds,
+        queueFailureMessage,
+      );
 
       throw new Error(queueFailureMessage);
     }
@@ -225,20 +173,7 @@ export async function retryReview(reviewId: string) {
 
   if (!wasQueued) {
     const queueFailureMessage = "The review worker queue is unavailable.";
-    const { error: reviewRollbackError } = await auth.supabase
-      .from("reviews")
-      .update({
-        status: "failed",
-        failed_reason: queueFailureMessage,
-        updated_at: nowIso(),
-      })
-      .eq("id", reviewId);
-
-    if (reviewRollbackError) {
-      throw new Error(
-        `${queueFailureMessage} Failed to restore failure state: ${reviewRollbackError.message}`,
-      );
-    }
+    await failReviewRetryAfterQueueError(auth, reviewId, queueFailureMessage);
 
     throw new Error(queueFailureMessage);
   }

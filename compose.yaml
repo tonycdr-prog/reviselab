@@ -2,6 +2,8 @@ services:
   grobid:
     image: grobid/grobid:0.8.2-crf
     container_name: reviselab-grobid
+    platform: linux/amd64
+    entrypoint: ["./grobid-service/bin/grobid-service"]
     ports:
       - "8070:8070"
     restart: unless-stopped

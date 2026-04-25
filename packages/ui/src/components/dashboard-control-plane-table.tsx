@@ -30,6 +30,7 @@ type DashboardControlPlaneTableProps = {
   filteredRowCount: number;
   currentPage: number;
   pageSize: number;
+  getReviewHref: (row: DashboardReviewRow) => string;
   onPageChange: (page: number, pageSize: number) => void;
 };
 
@@ -38,6 +39,7 @@ export function DashboardControlPlaneTable({
   filteredRowCount,
   currentPage,
   pageSize,
+  getReviewHref,
   onPageChange,
 }: DashboardControlPlaneTableProps) {
   const tableRows = paginatedRows.map((row) => ({
@@ -92,6 +94,8 @@ export function DashboardControlPlaneTable({
                     return null;
                   }
 
+                  const reviewHref = getReviewHref(item);
+
                   return (
                     <TableRow
                       key={row.id}
@@ -136,12 +140,8 @@ export function DashboardControlPlaneTable({
                           flipped
                         >
                           <OverflowMenuItem
+                            href={reviewHref}
                             itemText="Open review workspace"
-                            onClick={() => {
-                              window.location.assign(
-                                `/papers/${item.paperId}/reviews/${item.id}`,
-                              );
-                            }}
                           />
                         </OverflowMenu>
                       </TableCell>

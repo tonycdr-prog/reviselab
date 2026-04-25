@@ -67,25 +67,32 @@ export async function parsePdfWithGrobid(
     }
 
     const xml = await response.text();
-    const title =
-      findFirstMatch(xml, /<title[^>]*level="a"[^>]*>([\s\S]*?)<\/title>/i) ??
-      fallback.title;
-    const abstract =
-      findFirstMatch(
-        xml,
-        /<abstract[^>]*>[\s\S]*?<p>([\s\S]*?)<\/p>[\s\S]*?<\/abstract>/i,
-      ) ?? fallback.abstract;
+    const extractedTitle = findFirstMatch(
+      xml,
+      /<title[^>]*level="a"[^>]*>([\s\S]*?)<\/title>/i,
+    );
+    const extractedAbstract = findFirstMatch(
+      xml,
+      /<abstract[^>]*>[\s\S]*?<p>([\s\S]*?)<\/p>[\s\S]*?<\/abstract>/i,
+    );
+    const rawText = stripXml(xml);
+
+    if (!extractedTitle || !extractedAbstract || rawText.length < 200) {
+      throw new Error(
+        "GROBID could not extract a reliable title, abstract, and body text from the PDF.",
+      );
+    }
 
     return {
       parserEngine: "grobid",
       manuscript: {
         sourceKind: fallback.sourceKind,
-        title,
-        abstract,
+        title: extractedTitle,
+        abstract: extractedAbstract,
         authors: [],
         sections: [],
         references: [],
-        rawText: stripXml(xml),
+        rawText,
         parseDiagnostics: ["Parsed with GROBID full-text extraction."],
         ...(fallback.artifactPath
           ? { artifactPath: fallback.artifactPath }

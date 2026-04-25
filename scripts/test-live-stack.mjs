@@ -15,6 +15,7 @@ function run(command, args) {
 }
 
 try {
+  run("node", ["./scripts/check-local-manuscripts.mjs"]);
   run("node", ["./scripts/check-local-stack.mjs"]);
   run("node", ["./scripts/run-supabase-command.mjs", "db", "reset"]);
   run("node", ["./scripts/run-supabase-command.mjs", "test", "db"]);

@@ -1,6 +1,10 @@
 {
   "allowlist": [
     {
+      "path": "packages/core/src/generated/database.types.ts",
+      "reason": "Generated Supabase database contract; edited only by the DB type generation workflow."
+    },
+    {
       "path": "packages/core/src/review.ts",
       "reason": "Central review model and local review engine pending future extraction into narrower modules."
     },

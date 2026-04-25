@@ -35,6 +35,7 @@ export default function PreviewDashboardPage() {
         <DashboardControlPlane
           rows={rows}
           newReviewHref="/preview/upload-form"
+          getReviewHref={() => "/preview/review-workspace"}
         />
       </Column>
     </Grid>

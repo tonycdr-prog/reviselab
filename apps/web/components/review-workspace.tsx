@@ -6,62 +6,17 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   ReviewCheck,
   ReviewComment,
-  ReviewFile,
   ReviewSnapshot,
   SuggestionAction,
 } from "@reviselab/core";
 import { ReviewWorkspaceRecipe } from "@reviselab/ui";
-
-const VALID_TABS = new Set([
-  "overview",
-  "checks",
-  "files",
-  "comments",
-  "history",
-]);
-
-function getDefaultFilePath(review: ReviewSnapshot) {
-  const unresolvedFile =
-    review.files.find(
-      (file) => file.status !== "resolved" && file.status !== "unchanged",
-    ) ?? review.files[0];
-
-  return unresolvedFile?.path ?? "title.md";
-}
-
-function getCheckTarget(review: ReviewSnapshot, check: ReviewCheck) {
-  const suggestion = review.suggestions.find((candidate) =>
-    check.linkedSuggestionIds.includes(candidate.id),
-  );
-
-  return {
-    filePath:
-      check.reviewFilePath ??
-      suggestion?.filePath ??
-      getDefaultFilePath(review),
-    anchorId: check.anchorId ?? suggestion?.anchor.id ?? null,
-  };
-}
-
-function updateReviewParams(
-  pathname: string,
-  current: URLSearchParams,
-  next: Record<string, string | null>,
-) {
-  const params = new URLSearchParams(current.toString());
-
-  for (const [key, value] of Object.entries(next)) {
-    if (!value) {
-      params.delete(key);
-      continue;
-    }
-
-    params.set(key, value);
-  }
-
-  const query = params.toString();
-  return query ? `${pathname}?${query}` : pathname;
-}
+import {
+  getCheckTarget,
+  getSelectedContext,
+  getSelectedFilePath,
+  getSelectedTab,
+  updateReviewParams,
+} from "./review-workspace-routing";
 
 export function ReviewWorkspace({
   initialReview,
@@ -77,38 +32,15 @@ export function ReviewWorkspace({
   const [actionError, setActionError] = useState<string | null>(null);
 
   const selectedTab = useMemo(() => {
-    const nextTab = searchParams.get("tab");
-    return VALID_TABS.has(nextTab ?? "")
-      ? (nextTab as NonNullable<typeof nextTab>)
-      : "overview";
+    return getSelectedTab(searchParams);
   }, [searchParams]);
 
   const selectedFilePath = useMemo(() => {
-    const requested = searchParams.get("file");
-    const defaultPath = getDefaultFilePath(review);
-
-    if (!requested) {
-      return defaultPath;
-    }
-
-    return review.files.some((file) => file.path === requested)
-      ? (requested as ReviewFile["path"])
-      : defaultPath;
+    return getSelectedFilePath(review, searchParams);
   }, [review, searchParams]);
 
   const selectedAnchorId = searchParams.get("anchor");
-  const selectedContextValue = searchParams.get("context");
-  const selectedContext = selectedContextValue?.startsWith("check:")
-    ? {
-        type: "check" as const,
-        id: selectedContextValue.slice("check:".length),
-      }
-    : selectedContextValue?.startsWith("comment:")
-      ? {
-          type: "comment" as const,
-          id: selectedContextValue.slice("comment:".length),
-        }
-      : null;
+  const selectedContext = getSelectedContext(searchParams);
 
   function replaceParams(next: Record<string, string | null>) {
     setActionError(null);

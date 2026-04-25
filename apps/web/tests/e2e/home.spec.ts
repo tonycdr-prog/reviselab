@@ -7,5 +7,7 @@ test("landing page shows ReviseLab brand", async ({ page }) => {
       name: /Review your paper like a pull request/i,
     }),
   ).toBeVisible();
-  await expect(page.getByText("ReviseLab")).toBeVisible();
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "ReviseLab" }),
+  ).toBeVisible();
 });

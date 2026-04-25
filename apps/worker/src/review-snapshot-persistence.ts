@@ -108,6 +108,8 @@ export async function persistReviewSnapshot(
           summary: check.summary,
           detail: check.detail,
           source_url: check.sourceUrl,
+          source_checked_at: check.sourceCheckedAt,
+          evidence_json: check.evidence,
           anchor_id: check.anchorId ?? null,
           linked_suggestion_ids_json: check.linkedSuggestionIds,
         })),

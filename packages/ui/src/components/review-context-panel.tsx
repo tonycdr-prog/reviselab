@@ -20,7 +20,7 @@ export function ReviewContextPanel({
   onRestore,
 }: ReviewContextPanelProps) {
   return (
-    <aside className="rl-context-panel">
+    <aside className="rl-context-panel" aria-label="Review context inspector">
       <Tile className="rl-section">
         <h3>Selected file</h3>
         <p className="rl-muted">{file.path}</p>
@@ -66,9 +66,21 @@ export function ReviewContextPanel({
                   : selectedContext.item.sourceUrl!
               }
               target="_blank"
+              rel="noreferrer"
             >
               Open policy source
             </Link>
+          ) : null}
+          {selectedContext.type === "check" &&
+          (selectedContext.item.evidence?.length ?? 0) > 0 ? (
+            <ul className="rl-summary-list">
+              {selectedContext.item.evidence.map((evidence) => (
+                <li key={`${evidence.label}_${evidence.value}`}>
+                  <strong>{evidence.label}</strong>
+                  <p className="rl-muted">{evidence.value}</p>
+                </li>
+              ))}
+            </ul>
           ) : null}
         </Tile>
       ) : null}

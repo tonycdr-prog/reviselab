@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getReviewById } from "@/lib/reviews/repository";
 
+export const dynamic = "force-dynamic";
+
 type RouteProps = {
   params: Promise<{
     reviewId: string;

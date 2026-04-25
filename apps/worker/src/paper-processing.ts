@@ -1,11 +1,7 @@
-import type { NormalizedManuscript } from "@reviselab/core";
-
-import { downloadSourceFile, uploadArtifact } from "./paper-files";
-import { parseLatexArchive, parsePdfWithGrobid } from "./parsers";
-import {
-  buildFallbackSelectionManuscript,
-  loadPaperVersion,
-} from "./paper-version";
+import { uploadArtifact } from "./paper-files";
+import { parsePaperSource } from "./paper-parse-executor";
+import { markPendingReviewsFailed } from "./paper-processing-failures";
+import { loadPaperVersion } from "./paper-version";
 import { enqueueRunReview } from "./queue";
 import { appendWorkerReviewEvent } from "./review-events";
 import { requireSupabaseResult } from "./supabase";
@@ -81,48 +77,11 @@ export async function parsePaperVersion(
   let artifactPath = "";
 
   try {
-    let parseResult:
-      | {
-          manuscript: NormalizedManuscript;
-          parserEngine: string;
-        }
-      | undefined;
-
-    if (versionRow.source_kind === "selection") {
-      parseResult = {
-        parserEngine: "selection-manifest",
-        manuscript: buildFallbackSelectionManuscript(versionRow, paperRow),
-      };
-    } else {
-      const fileBuffer = await downloadSourceFile(
-        adminClient,
-        versionRow.source_path,
-      );
-
-      if (!fileBuffer) {
-        throw new Error("The uploaded source file is missing.");
-      }
-
-      if (versionRow.source_kind === "latex-zip") {
-        parseResult = await parseLatexArchive(fileBuffer);
-      } else {
-        const extracted =
-          (versionRow.extracted_structure_json as {
-            title?: string;
-            abstract?: string;
-          } | null) ?? {};
-
-        parseResult = await parsePdfWithGrobid(fileBuffer, {
-          sourceKind: "pdf",
-          title: extracted.title ?? paperRow.title,
-          abstract: extracted.abstract ?? "",
-          rawText: [
-            extracted.title ?? paperRow.title,
-            extracted.abstract ?? "",
-          ].join("\n\n"),
-        });
-      }
-    }
+    const parseResult = await parsePaperSource(
+      adminClient,
+      paperRow,
+      versionRow,
+    );
 
     artifactPath = await uploadArtifact(
       adminClient,
@@ -185,35 +144,20 @@ export async function parsePaperVersion(
       "Unable to persist the parse failure state.",
     );
 
-    await requireSupabaseResult(
-      adminClient
-        .from("reviews")
-        .update({
-          status: "failed",
-          failed_reason: message,
-          readiness: null,
-          summary_json: null,
-          ai_presence_summary_json: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("paper_version_id", versionRow.id)
-        .in("status", ["queued", "processing"]),
-      "Unable to mark queued reviews as failed after parsing.",
-    );
-
     await recordUsageEvent(adminClient, payload.workspaceId, "parse_failed", {
       paperId: paperRow.id,
       versionId: versionRow.id,
       error: message,
     });
 
-    for (const review of pendingReviews ?? []) {
-      await appendWorkerReviewEvent(adminClient, {
-        reviewId: review.id,
-        kind: "parse_failed",
-        detail: message,
-      });
-    }
+    await markPendingReviewsFailed(adminClient, {
+      paperVersionId: versionRow.id,
+      message,
+      eventKind: "parse_failed",
+      reviewIds: (pendingReviews ?? []).map((review) => review.id),
+      persistenceMessage:
+        "Unable to mark queued reviews as failed after parsing.",
+    });
 
     return {
       shouldArchive: true,
@@ -231,29 +175,14 @@ export async function parsePaperVersion(
         ? error.message
         : "The review worker queue is unavailable.";
 
-    await requireSupabaseResult(
-      adminClient
-        .from("reviews")
-        .update({
-          status: "failed",
-          failed_reason: message,
-          readiness: null,
-          summary_json: null,
-          ai_presence_summary_json: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("paper_version_id", versionRow.id)
-        .in("status", ["queued", "processing"]),
-      "Unable to mark pending reviews as failed after queue handoff failed.",
-    );
-
-    for (const review of pendingReviews ?? []) {
-      await appendWorkerReviewEvent(adminClient, {
-        reviewId: review.id,
-        kind: "review_failed",
-        detail: message,
-      });
-    }
+    await markPendingReviewsFailed(adminClient, {
+      paperVersionId: versionRow.id,
+      message,
+      eventKind: "review_failed",
+      reviewIds: (pendingReviews ?? []).map((review) => review.id),
+      persistenceMessage:
+        "Unable to mark pending reviews as failed after queue handoff failed.",
+    });
 
     return {
       shouldArchive: true,

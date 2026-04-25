@@ -63,36 +63,87 @@ This work studies review readiness for scientific preprints before submission.
   });
 }
 
+function escapePdfText(text) {
+  return text.replace(/[\\()]/g, (match) => `\\${match}`);
+}
+
 export function makePdf() {
-  return Buffer.from(`%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>
-endobj
-4 0 obj
-<< /Length 68 >>
-stream
-BT /F1 12 Tf 72 720 Td (ReviseLab smoke test manuscript abstract.) Tj ET
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f
-0000000009 00000 n
-0000000058 00000 n
-0000000115 00000 n
-0000000204 00000 n
-trailer
-<< /Root 1 0 R /Size 5 >>
-startxref
-321
-%%EOF
-`);
+  const lines = [
+    "A Novel Benchmark for Retrieval-Augmented Review Assistants",
+    "ReviseLab Smoke Author",
+    "Abstract",
+    "We propose a retrieval augmented review assistant for scientific writing.",
+    "The benchmark compares category fit, tone calibration, and policy aware revision suggestions.",
+    "Results show targeted review signals improve clarity without changing the paper core claims.",
+    "Introduction",
+    "This work studies review readiness for scientific preprints before submission.",
+  ];
+  const textOperations = [
+    "BT",
+    "/F1 18 Tf",
+    "72 720 Td",
+    `(${escapePdfText(lines[0])}) Tj`,
+    "/F1 12 Tf",
+  ];
+
+  for (const line of lines.slice(1)) {
+    textOperations.push("0 -22 Td", `(${escapePdfText(line)}) Tj`);
+  }
+
+  textOperations.push("ET");
+
+  const content = textOperations.join("\n");
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`,
+  ];
+  let output = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
+  const offsets = [0];
+
+  objects.forEach((object, index) => {
+    offsets.push(Buffer.byteLength(output));
+    output += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = Buffer.byteLength(output);
+  output += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+
+  for (const offset of offsets.slice(1)) {
+    output += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  }
+
+  output += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+
+  return Buffer.from(output, "binary");
+}
+
+async function deleteStorageObject(env, bucket, path) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  try {
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${bucket}/${encodedPath}`,
+      {
+        method: "DELETE",
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      },
+    );
+
+    if (!response.ok && response.status !== 404) {
+      console.warn(`${bucket} cleanup returned ${response.status}.`);
+    }
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? `${bucket} cleanup failed: ${error.message}`
+        : `${bucket} cleanup failed.`,
+    );
+  }
 }
 
 export async function uploadSource(env, path, body, contentType) {
@@ -117,27 +168,9 @@ export async function uploadSource(env, path, body, contentType) {
 }
 
 export async function deleteSource(env, path) {
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  try {
-    const response = await fetch(
-      `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/paper-sources/${encodedPath}`,
-      {
-        method: "DELETE",
-        headers: {
-          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-          authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-      },
-    );
+  await deleteStorageObject(env, "paper-sources", path);
+}
 
-    if (!response.ok && response.status !== 404) {
-      console.warn(`Storage cleanup returned ${response.status}.`);
-    }
-  } catch (error) {
-    console.warn(
-      error instanceof Error
-        ? `Storage cleanup failed: ${error.message}`
-        : "Storage cleanup failed.",
-    );
-  }
+export async function deleteArtifact(env, path) {
+  await deleteStorageObject(env, "paper-artifacts", path);
 }

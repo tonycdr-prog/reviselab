@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -76,6 +77,7 @@ const FORBIDDEN_ARTIFACT_PATHS = [
   "supabase/.temp",
   "test-results",
 ];
+const LIVE_DEV_ARTIFACT_ALLOWLIST = new Set(["apps/web/.next"]);
 const COLOR_PROPERTIES = new Set([
   "background",
   "backgroundColor",
@@ -195,6 +197,33 @@ function scopeContains(relativePath) {
   }
 
   return relativePath === scope || relativePath.startsWith(`${scope}/`);
+}
+
+function isNextDevServerRunning() {
+  const result = spawnSync("ps", ["-axo", "command="], {
+    encoding: "utf8",
+  });
+
+  if (result.status !== 0) {
+    return false;
+  }
+
+  const webAppPath = path.join(ROOT, "apps/web");
+
+  return (result.stdout ?? "")
+    .split(/\r?\n/)
+    .some(
+      (command) =>
+        command.includes(webAppPath) &&
+        command.includes("next") &&
+        command.includes(" dev"),
+    );
+}
+
+function isAllowedLiveDevArtifact(relativePath) {
+  return (
+    LIVE_DEV_ARTIFACT_ALLOWLIST.has(relativePath) && isNextDevServerRunning()
+  );
 }
 
 async function walk(entryPath, filePaths) {
@@ -452,6 +481,13 @@ async function main() {
 
     try {
       await stat(path.join(ROOT, relativePath));
+      if (isAllowedLiveDevArtifact(relativePath)) {
+        console.warn(
+          `${relativePath}: preserved because Next dev is running locally.`,
+        );
+        continue;
+      }
+
       addError(
         errors,
         path.join(ROOT, relativePath),

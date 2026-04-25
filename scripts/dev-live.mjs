@@ -6,6 +6,7 @@ import {
   LOCAL_INBUCKET_URL,
   ROOT,
   ensureDockerDaemonRunning,
+  normalizeSupabaseStatusEnv,
   parseEnvBlock,
   waitForHttp,
 } from "./local-stack-lib.mjs";
@@ -26,6 +27,23 @@ function run(command, args, options = {}) {
   }
 
   return (result.stdout ?? "").trim();
+}
+
+function runSupabaseStart() {
+  const result = spawnSync("supabase", ["start", "-x", "studio,vector"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+
+  if (result.status !== 0) {
+    throw new Error(
+      result.stderr?.trim() ||
+        "supabase start failed. Run `supabase start -x studio,vector --debug` for detailed logs.",
+    );
+  }
+
+  console.log("Supabase services are running.");
 }
 
 function ensureCommand(command, args, label) {
@@ -80,14 +98,14 @@ try {
   ensureCommand("pnpm", ["--version"], "pnpm");
   ensureDockerDaemonRunning();
 
-  console.log("Starting local Supabase services...");
-  run("supabase", ["start"]);
+  console.log("Starting local Supabase services without Studio/vector...");
+  runSupabaseStart();
 
   console.log("Starting local GROBID service...");
   run("docker", ["compose", "up", "-d", "grobid"]);
 
-  const stackEnv = parseEnvBlock(
-    run("supabase", ["status", "-o", "env"], { capture: true }),
+  const stackEnv = normalizeSupabaseStatusEnv(
+    parseEnvBlock(run("supabase", ["status", "-o", "env"], { capture: true })),
   );
   if (!stackEnv.API_URL) {
     throw new Error("Supabase did not report an API_URL after startup.");
@@ -114,7 +132,7 @@ try {
   console.log("Local live stack is ready.");
   console.log(`- Supabase API: ${stackEnv.API_URL}`);
   console.log(
-    `- Supabase Studio: ${stackEnv.STUDIO_URL ?? "http://127.0.0.1:54323"}`,
+    `- Supabase Studio: ${stackEnv.STUDIO_URL ?? "disabled locally"}`,
   );
   console.log(`- Inbucket: ${LOCAL_INBUCKET_URL}`);
   console.log(`- GROBID: ${LOCAL_GROBID_URL}`);

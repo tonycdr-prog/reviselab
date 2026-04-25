@@ -4,6 +4,10 @@ import type {
   ReviewReadiness,
   ReviewStage,
 } from "@reviselab/core";
+import {
+  PAPER_TYPES,
+  getPaperTypeLabel as getCorePaperTypeLabel,
+} from "@reviselab/core";
 
 export const PAGE_SIZES = [10, 25, 50];
 export const DEFAULT_PAGE_SIZE = 10;
@@ -48,24 +52,12 @@ export const PAPER_TYPE_OPTIONS: Array<{
   value: PaperType | "all";
 }> = [
   { label: "All paper types", value: "all" },
-  { label: "Research article", value: "research" },
-  { label: "Review article", value: "review" },
-  { label: "Survey", value: "survey" },
-  { label: "Position paper", value: "position" },
-  { label: "Technical report", value: "technical-report" },
+  ...PAPER_TYPES.map((value) => ({
+    label: getCorePaperTypeLabel(value),
+    value,
+  })),
 ];
 
 export function getPaperTypeLabel(value: DashboardReviewRow["paperType"]) {
-  switch (value) {
-    case "research":
-      return "Research article";
-    case "review":
-      return "Review article";
-    case "survey":
-      return "Survey";
-    case "position":
-      return "Position paper";
-    case "technical-report":
-      return "Technical report";
-  }
+  return getCorePaperTypeLabel(value);
 }

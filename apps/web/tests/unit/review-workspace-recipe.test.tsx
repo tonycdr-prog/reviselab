@@ -24,6 +24,20 @@ describe("ReviewWorkspaceRecipe", () => {
 
     expect(screen.getByText("Submission readiness")).toBeInTheDocument();
     expect(screen.getByText("Recommended updates")).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", { name: "Review summary" }),
+    ).toBeInTheDocument();
+  });
+
+  test("switches tabs when rendered without route-managed state", () => {
+    const review = createSampleReview();
+    render(<ReviewWorkspaceRecipe review={review} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Checks" }));
+    expect(screen.getByText("Policy checks")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "History" }));
+    expect(screen.getByText("Review history")).toBeInTheDocument();
   });
 
   test("keeps file rail keyboard selection aligned with the selected file", () => {
@@ -39,26 +53,39 @@ describe("ReviewWorkspaceRecipe", () => {
       />,
     );
 
-    const options = screen.getAllByRole("option");
-    const titleOption = options.find((option) =>
-      option.textContent?.includes("title.md"),
-    );
-    const abstractOption = options.find((option) =>
-      option.textContent?.includes("abstract.md"),
-    );
+    const fileNav = screen.getByRole("navigation", {
+      name: "Review files changed",
+    });
+    const titleOption = within(fileNav).getByRole("button", {
+      name: /title\.md/,
+    });
+    const abstractOption = within(fileNav).getByRole("button", {
+      name: /abstract\.md/,
+    });
 
     expect(titleOption).toHaveAttribute("tabindex", "0");
+    expect(titleOption).toHaveAttribute("aria-current", "location");
     expect(abstractOption).toHaveAttribute("tabindex", "-1");
-
-    if (!titleOption) {
-      throw new Error("Title option not found.");
-    }
 
     fireEvent.keyDown(titleOption, { key: "ArrowDown" });
     expect(onSelectFile).toHaveBeenCalledWith("abstract.md");
   });
 
-  test("applies the latest draft when the toolbar action is used", () => {
+  test("uses a full-width files workbench without the summary sidebar", () => {
+    const review = createSampleReview();
+
+    render(<ReviewWorkspaceRecipe review={review} selectedTab="files" />);
+
+    expect(screen.queryByText("Recommended updates")).not.toBeInTheDocument();
+    expect(screen.getByText("Selected file")).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", {
+        name: "Review context inspector",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  test("applies the latest draft from the inspector action area", () => {
     const review = createSampleReview();
     const onSuggestionAction = vi.fn();
     const abstractSuggestion = review.suggestions.find(
@@ -69,7 +96,7 @@ describe("ReviewWorkspaceRecipe", () => {
       throw new Error("Abstract suggestion not found.");
     }
 
-    const { container } = render(
+    render(
       <ReviewWorkspaceRecipe
         review={review}
         selectedTab="files"
@@ -83,19 +110,13 @@ describe("ReviewWorkspaceRecipe", () => {
       target: { value: "Toolbar-applied abstract draft" },
     });
 
-    const toolbarApplyButton = container.querySelector(
-      ".rl-diff-toolbar .cds--btn",
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save edited suggestion" }),
     );
-
-    if (!(toolbarApplyButton instanceof HTMLButtonElement)) {
-      throw new Error("Toolbar apply button not found.");
-    }
-
-    fireEvent.click(toolbarApplyButton);
 
     expect(onSuggestionAction).toHaveBeenCalledWith(
       abstractSuggestion.id,
-      "apply",
+      "edit",
       "Toolbar-applied abstract draft",
     );
   });

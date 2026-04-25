@@ -4,6 +4,10 @@ const HEARTBEAT_INTERVAL_MS = 60_000;
 
 let lastHeartbeatAt = 0;
 
+function isTransientSchemaError(message: string) {
+  return message.includes("schema cache") || message.includes("usage_events");
+}
+
 export async function recordWorkerHeartbeat(
   adminClient: WorkerAdminClient,
   force = false,
@@ -27,6 +31,11 @@ export async function recordWorkerHeartbeat(
   });
 
   if (error) {
+    if (isTransientSchemaError(error.message)) {
+      console.warn("Worker heartbeat waiting for database schema.");
+      return;
+    }
+
     console.error(`Worker heartbeat insert failed: ${error.message}`);
   }
 }

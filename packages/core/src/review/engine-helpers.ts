@@ -4,66 +4,15 @@ import {
   computeDiffStats,
   slugId,
 } from "./utils";
-import { CATEGORY_HINTS, FILE_TITLES } from "./engine-constants";
+import { FILE_TITLES } from "./engine-constants";
 import type {
   DiffStatus,
-  NormalizedManuscript,
   ReviewAnchor,
   ReviewFile,
-  ReviewInput,
   ReviewSeverity,
   ReviewSuggestion,
   SubmissionContext,
 } from "./types";
-
-export function rankCategories(text: string) {
-  const lower = text.toLowerCase();
-  return Object.entries(CATEGORY_HINTS)
-    .map(([category, keywords]) => ({
-      category,
-      score: keywords.reduce(
-        (total, keyword) => total + (lower.includes(keyword) ? 1 : 0),
-        0,
-      ),
-    }))
-    .sort((left, right) => right.score - left.score);
-}
-
-export function tightenAbstract(text: string) {
-  const cleaned = text.replace(/\s+/g, " ").trim();
-
-  if (!cleaned) {
-    return "Add a concise abstract that states the problem, method, evidence, and primary result in neutral language.";
-  }
-
-  const firstSentence = cleaned.split(/(?<=[.!?])\s+/)[0] ?? cleaned;
-  if (firstSentence.length < 140) {
-    return `${firstSentence} We then outline the method, evaluation setting, and the evidence supporting the claim.`;
-  }
-
-  return cleaned
-    .replace(/In this paper[,]?/gi, "We")
-    .replace(/This paper/gi, "This work")
-    .replace(/we propose/gi, "we present")
-    .replace(/!/g, ".");
-}
-
-export function buildNormalizedManuscript(
-  input: ReviewInput,
-): NormalizedManuscript {
-  return (
-    input.manuscript ?? {
-      sourceKind: "selection",
-      title: input.title,
-      abstract: input.abstract,
-      authors: [],
-      sections: [],
-      references: [],
-      rawText: `${input.title}\n\n${input.abstract}`,
-      parseDiagnostics: [],
-    }
-  );
-}
 
 export function createAnchor(
   filePath: ReviewSuggestion["filePath"],
@@ -90,15 +39,37 @@ export function buildFileBaseTexts(
   context: SubmissionContext,
   bestCategory: string,
 ): Record<(typeof CANONICAL_REVIEW_FILES)[number], string> {
+  const metadataLines = [
+    `target_server: ${context.targetServer ?? "arxiv"}`,
+    `title: ${context.title}`,
+    `intended_category: ${context.intendedCategory}`,
+    `paper_type: ${context.paperType}`,
+    `source_kind: ${context.sourceKind ?? "selection"}`,
+    `first_time_submitter: ${context.firstTimeSubmitter}`,
+    `prior_arxiv_authorship: ${context.priorArxivAuthorship ?? false}`,
+    `institutional_email: ${context.hasInstitutionalEmail ?? false}`,
+    `personal_endorser_plan: ${context.hasPersonalEndorser ?? false}`,
+    `peer_reviewed_venue: ${context.peerReviewedVenue ?? ""}`,
+    `journal_ref: ${context.journalRef ?? ""}`,
+    `doi: ${context.doi ?? ""}`,
+    `ai_assistance_used: ${context.aiAssistanceUsed ?? false}`,
+  ];
+  const submissionNotes = [
+    `Category rationale: ${bestCategory} is the best fit for the methods and vocabulary used in the abstract.`,
+    `Comments: ${context.comments?.trim() || "Not provided."}`,
+    `AI disclosure: ${context.aiDisclosureText?.trim() || "Not provided."}`,
+    `Peer review status: ${
+      context.paperType === "research"
+        ? "Research article selected."
+        : "Add conference or journal review context before submission."
+    }`,
+  ];
+
   return {
     "title.md": context.title,
     "abstract.md": context.abstract,
-    "metadata.yml": `title: ${context.title}\nintended_category: ${context.intendedCategory}\npaper_type: ${context.paperType}\nfirst_time_submitter: ${context.firstTimeSubmitter}`,
-    "submission_notes.md": `Category rationale: ${bestCategory} is the best fit for the methods and vocabulary used in the abstract.\nPeer review status: ${
-      context.paperType === "research"
-        ? "Not yet peer reviewed."
-        : "Add conference or journal review context before submission."
-    }`,
+    "metadata.yml": metadataLines.join("\n"),
+    "submission_notes.md": submissionNotes.join("\n"),
   };
 }
 

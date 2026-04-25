@@ -1,11 +1,11 @@
 import { type DashboardReviewRow, type ReviewSnapshot } from "@reviselab/core";
 
+import { getStoredReviewContext } from "./repository-context";
 import {
   buildHistory,
   buildReviewOverview,
   getStoredProgress,
   getStoredReadiness,
-  getStoredReviewContext,
   mapStoredCheck,
   mapStoredComment,
   mapStoredEvent,

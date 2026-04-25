@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -20,8 +21,43 @@ const DIRECTORIES_TO_REMOVE = [
   "test-results",
 ];
 const IGNORED_DIRECTORIES = new Set([".git", "node_modules"]);
+const NEXT_BUILD_DIR = "apps/web/.next";
+
+function isNextDevServerRunning() {
+  if (process.env.REVISELAB_FORCE_CLEAN_NEXT === "1") {
+    return false;
+  }
+
+  const result = spawnSync("ps", ["-axo", "command="], {
+    encoding: "utf8",
+  });
+
+  if (result.status !== 0) {
+    return false;
+  }
+
+  const webAppPath = path.join(ROOT, "apps/web");
+
+  return (result.stdout ?? "")
+    .split(/\r?\n/)
+    .some(
+      (command) =>
+        command.includes(webAppPath) &&
+        command.includes("next") &&
+        command.includes(" dev"),
+    );
+}
+
+const shouldPreserveNextBuild = isNextDevServerRunning();
 
 async function removeIfPresent(relativePath) {
+  if (relativePath === NEXT_BUILD_DIR && shouldPreserveNextBuild) {
+    console.log(
+      "Skipped apps/web/.next because Next dev is running. Stop the dev server or set REVISELAB_FORCE_CLEAN_NEXT=1 to remove it.",
+    );
+    return;
+  }
+
   await rm(path.join(ROOT, relativePath), {
     force: true,
     recursive: true,

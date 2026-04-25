@@ -1,7 +1,12 @@
-import { ReviewWorkspaceRecipe } from "@reviselab/ui";
+import { Suspense } from "react";
 
 import { createPreviewReview } from "../fixtures";
+import { PreviewReviewWorkspace } from "./preview-review-workspace";
 
 export default function PreviewReviewWorkspacePage() {
-  return <ReviewWorkspaceRecipe review={createPreviewReview()} />;
+  return (
+    <Suspense fallback={null}>
+      <PreviewReviewWorkspace review={createPreviewReview()} />
+    </Suspense>
+  );
 }

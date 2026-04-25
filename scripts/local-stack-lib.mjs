@@ -24,13 +24,25 @@ export function parseEnvBlock(content) {
       }
 
       const key = line.slice(0, separatorIndex).trim();
-      const value = line.slice(separatorIndex + 1).trim();
+      const rawValue = line.slice(separatorIndex + 1).trim();
+      const value =
+        (rawValue.startsWith('"') && rawValue.endsWith('"')) ||
+        (rawValue.startsWith("'") && rawValue.endsWith("'"))
+          ? rawValue.slice(1, -1)
+          : rawValue;
 
       return {
         ...entries,
         [key]: value,
       };
     }, {});
+}
+
+export function normalizeSupabaseStatusEnv(env) {
+  return {
+    ...env,
+    DATABASE_URL: env.DATABASE_URL ?? env.DB_URL,
+  };
 }
 
 export function readEnvFile(relativePath) {
@@ -130,6 +142,28 @@ export function readHostedWebEnv() {
   assert(
     !isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL),
     getHostedPoolerMessage(),
+  );
+
+  return env;
+}
+
+export function readLocalWebEnv() {
+  const env = readEnvFile("apps/web/.env.local");
+
+  assert(env, "apps/web/.env.local is missing.");
+  assert(env.NEXT_PUBLIC_SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL is missing.");
+  assert(
+    env.SUPABASE_SERVICE_ROLE_KEY,
+    "SUPABASE_SERVICE_ROLE_KEY is missing.",
+  );
+  assert(env.DATABASE_URL, "DATABASE_URL is missing.");
+  assert(
+    isLocalSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL),
+    "apps/web/.env.local must point at local Supabase for live smoke tests.",
+  );
+  assert(
+    isLocalDatabaseUrl(env.DATABASE_URL),
+    "apps/web/.env.local DATABASE_URL must point at local Supabase for live smoke tests.",
   );
 
   return env;

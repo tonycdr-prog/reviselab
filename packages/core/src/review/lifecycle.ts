@@ -160,7 +160,7 @@ export function getReviewEventLabel(kind: ReviewEventKind) {
     case "suggestion_resolved":
       return "Marked suggestion as resolved";
     case "suggestion_restored":
-      return "Restored AI suggestion";
+      return "Restored suggestion";
     case "suggestion_edited":
       return "Edited suggestion";
   }

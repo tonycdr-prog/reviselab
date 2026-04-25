@@ -29,11 +29,34 @@ export function createUploadedPaperRecord(
     versionId: ids.versionId,
     createdAt,
     context: {
+      targetServer: input.targetServer ?? "arxiv",
       title: input.title,
       abstract: input.abstract,
       intendedCategory: input.intendedCategory,
       paperType: input.paperType,
       firstTimeSubmitter: input.firstTimeSubmitter,
+      ...(input.sourceKind ? { sourceKind: input.sourceKind } : {}),
+      ...(typeof input.priorArxivAuthorship === "boolean"
+        ? { priorArxivAuthorship: input.priorArxivAuthorship }
+        : {}),
+      ...(typeof input.hasInstitutionalEmail === "boolean"
+        ? { hasInstitutionalEmail: input.hasInstitutionalEmail }
+        : {}),
+      ...(typeof input.hasPersonalEndorser === "boolean"
+        ? { hasPersonalEndorser: input.hasPersonalEndorser }
+        : {}),
+      ...(input.peerReviewedVenue
+        ? { peerReviewedVenue: input.peerReviewedVenue }
+        : {}),
+      ...(input.journalRef ? { journalRef: input.journalRef } : {}),
+      ...(input.doi ? { doi: input.doi } : {}),
+      ...(typeof input.aiAssistanceUsed === "boolean"
+        ? { aiAssistanceUsed: input.aiAssistanceUsed }
+        : {}),
+      ...(input.aiDisclosureText
+        ? { aiDisclosureText: input.aiDisclosureText }
+        : {}),
+      ...(input.comments ? { comments: input.comments } : {}),
     },
     fileName: input.file.name,
   };
@@ -87,10 +110,12 @@ export function getProcessingSummary(context: SubmissionContext) {
 
 export function getStoredReviewFallbackContext(): SubmissionContext {
   return {
+    targetServer: "arxiv",
     title: "Queued review",
     abstract: "",
     intendedCategory: "cs.AI",
     paperType: "research" as PaperType,
     firstTimeSubmitter: false,
+    sourceKind: "selection",
   };
 }

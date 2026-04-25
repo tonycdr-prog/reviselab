@@ -9,7 +9,6 @@ import {
   getSuggestionSaveAction,
   type ReviewDiffSurfaceProps,
 } from "./review-diff-shared";
-import { ReviewDiffToolbar } from "./review-diff-toolbar";
 import { ReviewFileRail } from "./review-file-rail";
 import type { ReviewFile } from "@reviselab/core";
 
@@ -133,25 +132,6 @@ export function ReviewDiffSurface({
 
       <div className="rl-diff-main">
         <Tile className="rl-section rl-diff-surface">
-          <ReviewDiffToolbar
-            file={selectedFile}
-            activeSuggestion={activeSuggestion}
-            editedText={activeDraft}
-            isPending={isPending}
-            onApply={(suggestion, editedText) =>
-              onSuggestionAction(suggestion.id, "apply", editedText)
-            }
-            onReject={(suggestion) =>
-              onSuggestionAction(suggestion.id, "reject")
-            }
-            onResolve={(suggestion) =>
-              onSuggestionAction(suggestion.id, "resolve")
-            }
-            onRestore={(suggestion) =>
-              onSuggestionAction(suggestion.id, "restore")
-            }
-          />
-
           <DiffSurfaceAdapter
             file={selectedFile}
             suggestions={fileSuggestions}

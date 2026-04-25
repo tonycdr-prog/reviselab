@@ -8,6 +8,7 @@ import {
   LOCAL_INBUCKET_URL,
   ROOT,
   isLocalSupabaseUrl,
+  normalizeSupabaseStatusEnv,
   parseEnvBlock,
   readEnvFile,
   waitForHttp,
@@ -36,8 +37,8 @@ function run(command, args, options = {}) {
 }
 
 function readSupabaseStatusEnv() {
-  return parseEnvBlock(
-    run("supabase", ["status", "-o", "env"], { capture: true }),
+  return normalizeSupabaseStatusEnv(
+    parseEnvBlock(run("supabase", ["status", "-o", "env"], { capture: true })),
   );
 }
 
@@ -203,7 +204,7 @@ try {
 
   console.log("Local stack check passed.");
   console.log(`- Supabase API: ${stackEnv.API_URL}`);
-  console.log(`- Studio: ${stackEnv.STUDIO_URL ?? "http://127.0.0.1:54323"}`);
+  console.log(`- Studio: ${stackEnv.STUDIO_URL ?? "disabled locally"}`);
   console.log(`- Inbucket: ${LOCAL_INBUCKET_URL}`);
   console.log(`- GROBID: ${LOCAL_GROBID_URL}`);
 } catch (error) {

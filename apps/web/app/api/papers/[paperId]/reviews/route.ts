@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { isPaperType, type PaperType } from "@reviselab/core";
+import {
+  isPaperSourceKind,
+  isPaperType,
+  type PaperType,
+} from "@reviselab/core";
 
 import { readJsonObject } from "@/app/api/_helpers/read-json-object";
 import { createReview } from "@/lib/reviews/repository";
@@ -18,6 +22,16 @@ type ReviewCreateRequestBody = {
   intendedCategory: string;
   paperType: PaperType;
   firstTimeSubmitter: boolean;
+  sourceKind?: "pdf" | "latex-zip" | "selection";
+  priorArxivAuthorship?: boolean;
+  hasInstitutionalEmail?: boolean;
+  hasPersonalEndorser?: boolean;
+  peerReviewedVenue?: string;
+  journalRef?: string;
+  doi?: string;
+  aiAssistanceUsed?: boolean;
+  aiDisclosureText?: string;
+  comments?: string;
 };
 
 export async function POST(request: Request, { params }: RouteProps) {
@@ -53,8 +67,48 @@ export async function POST(request: Request, { params }: RouteProps) {
     );
   }
 
+  if (
+    typeof body.sourceKind !== "undefined" &&
+    (typeof body.sourceKind !== "string" || !isPaperSourceKind(body.sourceKind))
+  ) {
+    return NextResponse.json(
+      { error: "Review source kind is invalid." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    [
+      body.peerReviewedVenue,
+      body.journalRef,
+      body.doi,
+      body.aiDisclosureText,
+      body.comments,
+    ].some((value) => value !== undefined && typeof value !== "string")
+  ) {
+    return NextResponse.json(
+      { error: "Review context text fields must be strings." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    [
+      body.priorArxivAuthorship,
+      body.hasInstitutionalEmail,
+      body.hasPersonalEndorser,
+      body.aiAssistanceUsed,
+    ].some((value) => value !== undefined && typeof value !== "boolean")
+  ) {
+    return NextResponse.json(
+      { error: "Review context flags must be boolean values." },
+      { status: 400 },
+    );
+  }
+
   try {
     const review = await createReview({
+      targetServer: "arxiv",
       paperId,
       versionId: body.versionId.trim(),
       title: body.title.trim(),
@@ -62,6 +116,16 @@ export async function POST(request: Request, { params }: RouteProps) {
       intendedCategory: body.intendedCategory.trim(),
       paperType: body.paperType,
       firstTimeSubmitter: body.firstTimeSubmitter,
+      ...(body.sourceKind ? { sourceKind: body.sourceKind } : {}),
+      priorArxivAuthorship: body.priorArxivAuthorship === true,
+      hasInstitutionalEmail: body.hasInstitutionalEmail === true,
+      hasPersonalEndorser: body.hasPersonalEndorser === true,
+      peerReviewedVenue: body.peerReviewedVenue?.trim() ?? "",
+      journalRef: body.journalRef?.trim() ?? "",
+      doi: body.doi?.trim() ?? "",
+      aiAssistanceUsed: body.aiAssistanceUsed === true,
+      aiDisclosureText: body.aiDisclosureText?.trim() ?? "",
+      comments: body.comments?.trim() ?? "",
     });
 
     return NextResponse.json({

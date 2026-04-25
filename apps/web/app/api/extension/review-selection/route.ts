@@ -33,9 +33,31 @@ export async function POST(request: Request) {
     );
   }
   const pairedToken = getBearerToken(request);
-  const normalizedAbstract = body.abstract?.trim() ?? "";
+  const normalizedTitle =
+    typeof body.title === "string" ? body.title.trim() : "";
+  const normalizedAbstract =
+    typeof body.abstract === "string" ? body.abstract.trim() : "";
+  const normalizedCategory =
+    typeof body.intendedCategory === "string"
+      ? body.intendedCategory.trim()
+      : "";
 
-  if (body.paperType && !isPaperType(body.paperType)) {
+  if (
+    (body.title !== undefined && typeof body.title !== "string") ||
+    (body.abstract !== undefined && typeof body.abstract !== "string") ||
+    (body.intendedCategory !== undefined &&
+      typeof body.intendedCategory !== "string")
+  ) {
+    return NextResponse.json(
+      { error: "Selection review text fields must be strings." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    body.paperType !== undefined &&
+    (typeof body.paperType !== "string" || !isPaperType(body.paperType))
+  ) {
     return NextResponse.json(
       { error: "Paper type is invalid." },
       { status: 400 },
@@ -62,9 +84,9 @@ export async function POST(request: Request) {
   try {
     const snapshot = await reviewSelection(
       {
-        title: body.title?.trim() || "Overleaf selection review",
+        title: normalizedTitle || "Overleaf selection review",
         abstract: normalizedAbstract,
-        intendedCategory: body.intendedCategory?.trim() || "cs.AI",
+        intendedCategory: normalizedCategory || "cs.AI",
         paperType: body.paperType ?? "research",
         ...(body.firstTimeSubmitter === undefined
           ? {}

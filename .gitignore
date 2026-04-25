@@ -9,6 +9,7 @@ node_modules
 .eslintcache
 .vercel
 supabase/.temp
+supabase/.branches
 dist
 coverage
 playwright-report
@@ -20,3 +21,5 @@ test-results
 *.tsbuildinfo
 pnpm-debug.log*
 codedb.snapshot
+.local-manuscripts/
+.local-runtime/

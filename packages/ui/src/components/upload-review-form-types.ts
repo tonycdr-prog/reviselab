@@ -1,0 +1,38 @@
+import type { PaperType } from "@reviselab/core";
+
+export type UploadReviewFormViewProps = {
+  title: string;
+  abstract: string;
+  intendedCategory: string;
+  paperType: PaperType;
+  firstTimeSubmitter: boolean;
+  priorArxivAuthorship: boolean;
+  hasInstitutionalEmail: boolean;
+  hasPersonalEndorser: boolean;
+  peerReviewedVenue: string;
+  journalRef: string;
+  doi: string;
+  aiAssistanceUsed: boolean;
+  aiDisclosureText: string;
+  comments: string;
+  selectedFileName?: string;
+  isSubmitting: boolean;
+  error?: string | null;
+  isFormReady: boolean;
+  onTitleChange: (value: string) => void;
+  onAbstractChange: (value: string) => void;
+  onIntendedCategoryChange: (value: string) => void;
+  onPaperTypeChange: (value: PaperType) => void;
+  onFirstTimeSubmitterChange: (value: boolean) => void;
+  onPriorArxivAuthorshipChange: (value: boolean) => void;
+  onHasInstitutionalEmailChange: (value: boolean) => void;
+  onHasPersonalEndorserChange: (value: boolean) => void;
+  onPeerReviewedVenueChange: (value: string) => void;
+  onJournalRefChange: (value: string) => void;
+  onDoiChange: (value: string) => void;
+  onAiAssistanceUsedChange: (value: boolean) => void;
+  onAiDisclosureTextChange: (value: string) => void;
+  onCommentsChange: (value: string) => void;
+  onFileChange: (file: File | null) => void;
+  onSubmit: () => void;
+};

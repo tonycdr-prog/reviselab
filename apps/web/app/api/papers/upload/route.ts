@@ -16,6 +16,19 @@ export async function POST(request: Request) {
   const paperType = isPaperType(requestedPaperType) ? requestedPaperType : null;
   const firstTimeSubmitter =
     String(formData.get("firstTimeSubmitter") ?? "false") === "true";
+  const priorArxivAuthorship =
+    String(formData.get("priorArxivAuthorship") ?? "false") === "true";
+  const hasInstitutionalEmail =
+    String(formData.get("hasInstitutionalEmail") ?? "false") === "true";
+  const hasPersonalEndorser =
+    String(formData.get("hasPersonalEndorser") ?? "false") === "true";
+  const aiAssistanceUsed =
+    String(formData.get("aiAssistanceUsed") ?? "false") === "true";
+  const peerReviewedVenue = String(formData.get("peerReviewedVenue") ?? "");
+  const journalRef = String(formData.get("journalRef") ?? "");
+  const doi = String(formData.get("doi") ?? "");
+  const aiDisclosureText = String(formData.get("aiDisclosureText") ?? "");
+  const comments = String(formData.get("comments") ?? "");
   const fileValue = formData.get("file");
   const file = fileValue instanceof File ? fileValue : null;
   const normalizedFileName = file?.name.toLowerCase() ?? "";
@@ -46,11 +59,21 @@ export async function POST(request: Request) {
 
   try {
     const uploaded = await createUploadedPaper({
+      targetServer: "arxiv",
       title: normalizedTitle,
       abstract: normalizedAbstract,
       intendedCategory: intendedCategory.trim() || "cs.AI",
       paperType,
       firstTimeSubmitter,
+      priorArxivAuthorship,
+      hasInstitutionalEmail,
+      hasPersonalEndorser,
+      peerReviewedVenue: peerReviewedVenue.trim(),
+      journalRef: journalRef.trim(),
+      doi: doi.trim(),
+      aiAssistanceUsed,
+      aiDisclosureText: aiDisclosureText.trim(),
+      comments: comments.trim(),
       file,
     });
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { diffCleanupSemantic, diffMain } from "diff-match-patch-es";
 import {
   Decoration,
   Diff,
@@ -11,6 +10,8 @@ import {
 } from "react-diff-view";
 
 import { Button, Tag, Tile } from "../carbon";
+import { ReviewAILabel } from "./review-ai-label";
+import { InlineDiffPreview } from "./review-inline-diff-preview";
 import type {
   DiffRendererAdapterProps,
   DiffSurfaceAdapterProps,
@@ -39,60 +40,6 @@ function buildPatchText(
   ].join("\n");
 }
 
-function InlineDiffPreview({
-  originalText,
-  nextText,
-}: {
-  originalText: string;
-  nextText: string;
-}) {
-  const diffs = useMemo(() => {
-    const tokens = diffMain(originalText, nextText);
-    diffCleanupSemantic(tokens);
-    return tokens;
-  }, [nextText, originalText]);
-
-  return (
-    <div className="rl-inline-diff">
-      <p className="rl-inline-diff-label">Changed spans</p>
-      <div className="rl-inline-diff-grid">
-        <div>
-          {diffs.map(([operation, text], index) => (
-            <span
-              key={`old_${index}_${text}`}
-              className={
-                operation === -1
-                  ? "rl-inline-diff-delete"
-                  : operation === 0
-                    ? "rl-inline-diff-equal"
-                    : "rl-inline-diff-hidden"
-              }
-            >
-              {operation === 1 ? "" : text}
-            </span>
-          ))}
-        </div>
-        <div>
-          {diffs.map(([operation, text], index) => (
-            <span
-              key={`new_${index}_${text}`}
-              className={
-                operation === 1
-                  ? "rl-inline-diff-insert"
-                  : operation === 0
-                    ? "rl-inline-diff-equal"
-                    : "rl-inline-diff-hidden"
-              }
-            >
-              {operation === -1 ? "" : text}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function DiffRendererAdapter({
   suggestion,
   viewType,
@@ -101,6 +48,7 @@ export function DiffRendererAdapter({
 }: DiffRendererAdapterProps) {
   const tileRef = useRef<HTMLDivElement | null>(null);
   const nextText = suggestion.editedText ?? suggestion.suggestedText;
+  const explainability = suggestion.explainability;
   const parsed = useMemo(() => {
     const diffText = buildPatchText(
       suggestion,
@@ -151,6 +99,11 @@ export function DiffRendererAdapter({
           <p className="rl-muted">{suggestion.rationale}</p>
         </div>
         <div className="rl-toolbar">
+          {suggestion.origin === "ai" &&
+          explainability &&
+          !suggestion.editedText ? (
+            <ReviewAILabel explainability={explainability} />
+          ) : null}
           <Tag type={getSeverityTagType(suggestion.severity)}>
             {suggestion.severity}
           </Tag>

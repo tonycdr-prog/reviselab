@@ -18,6 +18,15 @@ import type {
 
 const MAX_QUEUE_ATTEMPTS = 3;
 
+function isResetTransientError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "3F000" || error.code === "57P01")
+  );
+}
+
 async function processParseJob(
   adminClient: ReturnType<typeof createWorkerAdminClient>,
   sql: WorkerSql,
@@ -113,7 +122,13 @@ async function main() {
 
       await wait(5000);
     } catch (error) {
-      console.error("Worker iteration failed", error);
+      if (isResetTransientError(error)) {
+        console.warn(
+          "Worker waiting for local database queues to become available.",
+        );
+      } else {
+        console.error("Worker iteration failed", error);
+      }
       await wait(5000);
     }
   }

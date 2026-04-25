@@ -5,6 +5,20 @@ import { normalizeNextPath } from "@/lib/auth/next-path";
 import { getViewerContext } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+async function redirectSignedInViewer(nextPath: string, origin: string) {
+  try {
+    const viewer = await getViewerContext();
+
+    if (viewer) {
+      return NextResponse.redirect(new URL(nextPath, origin));
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -12,6 +26,12 @@ export async function GET(request: Request) {
   const callbackError = getAuthCallbackError(url.searchParams);
 
   if (callbackError) {
+    const signedInRedirect = await redirectSignedInViewer(nextPath, url.origin);
+
+    if (signedInRedirect) {
+      return signedInRedirect;
+    }
+
     const signInUrl = new URL("/auth/sign-in", url.origin);
     signInUrl.searchParams.set("next", nextPath);
     signInUrl.searchParams.set("error", callbackError.message);
@@ -25,6 +45,12 @@ export async function GET(request: Request) {
 
   const supabase = await createSupabaseServerClient();
   if (!supabase || !code) {
+    const signedInRedirect = await redirectSignedInViewer(nextPath, url.origin);
+
+    if (signedInRedirect) {
+      return signedInRedirect;
+    }
+
     return NextResponse.redirect(new URL("/auth/sign-in", url.origin));
   }
 

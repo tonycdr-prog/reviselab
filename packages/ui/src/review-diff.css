@@ -1,0 +1,238 @@
+.rl-diff-workspace {
+  display: grid;
+  gap: var(--cds-spacing-05);
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-x: clip;
+}
+
+.rl-file-rail {
+  align-self: start;
+  overflow: hidden;
+}
+
+.rl-file-rail-header {
+  display: grid;
+  gap: var(--cds-spacing-03);
+}
+
+.rl-file-rail-list {
+  display: grid;
+  gap: var(--cds-spacing-03);
+}
+
+.rl-file-rail-item {
+  display: grid;
+  gap: var(--cds-spacing-02);
+  border: 1px solid var(--cds-border-subtle);
+  background: var(--cds-layer);
+  padding: var(--cds-spacing-04);
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  min-inline-size: 0;
+}
+
+.rl-file-rail-item-selected {
+  border-color: var(--cds-border-interactive);
+  box-shadow: inset 0 0 0 1px var(--cds-border-interactive);
+}
+
+.rl-file-rail-row,
+.rl-diff-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cds-spacing-03);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rl-file-rail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.rl-file-rail-row strong {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rl-file-rail-row .cds--tag {
+  justify-self: end;
+  margin-inline-end: 0;
+}
+
+.rl-diff-toolbar {
+  display: grid;
+  gap: var(--cds-spacing-05);
+}
+
+.rl-diff-block {
+  display: grid;
+  gap: var(--cds-spacing-04);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
+}
+
+.rl-diff-block-highlighted {
+  box-shadow: inset 0 0 0 1px var(--cds-border-interactive);
+}
+
+.rl-diff-renderer {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-block: 1px solid var(--cds-border-subtle);
+  background: var(--cds-layer);
+}
+
+.rl-diff-renderer .diff {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  max-inline-size: none;
+  table-layout: auto;
+}
+
+.rl-diff-renderer .diff-line {
+  font-family: var(--font-ibm-plex-mono), monospace;
+}
+
+.rl-diff-renderer .diff-gutter-col {
+  inline-size: var(--cds-spacing-10);
+}
+
+.rl-diff-renderer .diff-code {
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.rl-hunk-decoration {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cds-spacing-03);
+  align-items: center;
+  padding: var(--cds-spacing-03) 0;
+}
+
+.rl-inline-diff {
+  display: grid;
+  gap: var(--cds-spacing-03);
+}
+
+.rl-inline-diff-label {
+  margin: 0;
+  color: var(--cds-text-secondary);
+}
+
+.rl-inline-diff-grid {
+  display: grid;
+  gap: var(--cds-spacing-04);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  font-family: var(--font-ibm-plex-mono), monospace;
+  white-space: pre-wrap;
+}
+
+.rl-inline-diff-grid > div {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: auto;
+  padding: var(--cds-spacing-03);
+  background: var(--cds-layer);
+  border: 1px solid var(--cds-border-subtle);
+}
+
+.rl-inline-diff-equal {
+  color: var(--cds-text-primary);
+}
+
+.rl-inline-diff-delete {
+  background: var(--cds-support-error-inverse);
+  color: var(--cds-text-on-color);
+}
+
+.rl-inline-diff-insert {
+  background: var(--cds-support-success-inverse);
+  color: var(--cds-text-on-color);
+}
+
+.rl-inline-diff-hidden {
+  display: none;
+}
+
+.rl-context-panel {
+  align-self: start;
+  overflow: hidden;
+}
+
+.rl-context-panel > .rl-section,
+.rl-suggestion-editor {
+  overflow: hidden;
+}
+
+.rl-suggestion-editor .rl-code-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rl-suggestion-editor pre {
+  margin: 0;
+  max-inline-size: 100%;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rl-suggestion-editor .cds--text-area__wrapper,
+.rl-suggestion-editor .cds--text-area {
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+
+.rl-suggestion-actions {
+  display: grid;
+  gap: var(--cds-spacing-03);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.rl-suggestion-actions .cds--btn {
+  inline-size: 100%;
+  max-inline-size: none;
+}
+
+@media (min-width: 1056px) {
+  .rl-diff-workspace {
+    grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .rl-context-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1312px) {
+  .rl-diff-workspace {
+    grid-template-columns:
+      minmax(12rem, 16rem)
+      minmax(34rem, 1fr)
+      minmax(18rem, 24rem);
+  }
+
+  .rl-context-panel {
+    grid-column: auto;
+    position: sticky;
+    top: calc(3rem + var(--cds-spacing-05));
+  }
+
+  .rl-diff-renderer .diff {
+    min-inline-size: 100%;
+  }
+}

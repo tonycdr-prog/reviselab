@@ -1,6 +1,11 @@
 "use client";
 
-import type { PaperType, ReviewSnapshot } from "@reviselab/core";
+import {
+  PAPER_TYPES,
+  getPaperTypeLabel,
+  type PaperType,
+  type ReviewSnapshot,
+} from "@reviselab/core";
 
 import {
   Button,
@@ -16,13 +21,6 @@ import {
   Tile,
 } from "../carbon";
 import { ReviewStatusTag } from "./review-status-tag";
-const PAPER_TYPES: Array<{ label: string; value: PaperType }> = [
-  { label: "Research article", value: "research" },
-  { label: "Review article", value: "review" },
-  { label: "Survey", value: "survey" },
-  { label: "Position paper", value: "position" },
-  { label: "Technical report", value: "technical-report" },
-];
 
 export type OverleafPanelViewProps = {
   brandName: string;
@@ -143,11 +141,11 @@ export function OverleafPanelView({
                 onPaperTypeChange(event.currentTarget.value as PaperType)
               }
             >
-              {PAPER_TYPES.map((option) => (
+              {PAPER_TYPES.map((value) => (
                 <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  text={option.label}
+                  key={value}
+                  value={value}
+                  text={getPaperTypeLabel(value)}
                 />
               ))}
             </Select>

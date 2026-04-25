@@ -2,6 +2,8 @@ import "server-only";
 
 import postgres from "postgres";
 
+import type { PaperSourceKind } from "@reviselab/core";
+
 import { getViewerContext } from "@/lib/auth/session";
 import {
   createSupabaseAdminClient,
@@ -84,7 +86,7 @@ export async function recordTelemetry(
   }
 }
 
-export function getSourceKind(file: File) {
+export function getSourceKind(file: File): PaperSourceKind {
   return file.name.toLowerCase().endsWith(".zip") ? "latex-zip" : "pdf";
 }
 

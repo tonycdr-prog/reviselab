@@ -16,13 +16,13 @@ type ReviewSectionProps = {
 
 export function ReviewHeader({ review }: ReviewSectionProps) {
   return (
-    <Tile className="rl-section">
+    <Tile className="rl-section rl-review-header">
       <div className="rl-review-header-copy">
         <h1>{review.context.title}</h1>
         <p className="rl-muted">{review.overview}</p>
       </div>
 
-      <div className="rl-toolbar">
+      <div className="rl-toolbar rl-review-header-meta">
         <Tag type="blue">{review.context.intendedCategory}</Tag>
         <Tag type="cool-gray">
           {getPaperTypeLabel(review.context.paperType)}
@@ -54,7 +54,7 @@ export function OverviewPanel({ review }: ReviewSectionProps) {
 
 export function ReviewSidebar({ review }: ReviewSectionProps) {
   return (
-    <aside className="rl-sidebar">
+    <aside className="rl-sidebar" aria-label="Review summary">
       <Tile className="rl-section">
         <h3>Submission readiness</h3>
         <div className="rl-status-chip-row">

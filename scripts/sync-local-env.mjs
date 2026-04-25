@@ -8,6 +8,7 @@ import {
   LOCAL_GROBID_URL,
   ROOT,
   isLocalSupabaseUrl,
+  normalizeSupabaseStatusEnv,
   parseEnvBlock,
   readEnvFile,
 } from "./local-stack-lib.mjs";
@@ -30,7 +31,9 @@ function run(command, args) {
 }
 
 function readSupabaseStatusEnv() {
-  return parseEnvBlock(run("supabase", ["status", "-o", "env"]));
+  return normalizeSupabaseStatusEnv(
+    parseEnvBlock(run("supabase", ["status", "-o", "env"])),
+  );
 }
 
 function assertStackEnv(stackEnv) {

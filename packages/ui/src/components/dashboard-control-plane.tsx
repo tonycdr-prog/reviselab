@@ -21,11 +21,13 @@ import { DashboardControlPlaneToolbar } from "./dashboard-control-plane-toolbar"
 type DashboardControlPlaneProps = {
   rows: DashboardReviewRow[];
   newReviewHref: string;
+  getReviewHref?: (row: DashboardReviewRow) => string;
 };
 
 export function DashboardControlPlane({
   rows,
   newReviewHref,
+  getReviewHref = (row) => `/papers/${row.paperId}/reviews/${row.id}`,
 }: DashboardControlPlaneProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState<ReviewStage | "all">("all");
@@ -111,6 +113,7 @@ export function DashboardControlPlane({
           filteredRowCount={filteredRows.length}
           currentPage={currentPage}
           pageSize={pageSize}
+          getReviewHref={getReviewHref}
           onPageChange={(nextPage, nextPageSize) => {
             setPage(nextPage);
             setPageSize(nextPageSize);

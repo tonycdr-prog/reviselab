@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { isPaperType } from "@reviselab/core";
+import { isPaperSourceKind, isPaperType } from "@reviselab/core";
 
 import {
   createQueuedReviewSnapshot,
@@ -39,5 +39,12 @@ describe("repository contracts", () => {
     expect(isPaperType("research")).toBe(true);
     expect(isPaperType("technical-report")).toBe(true);
     expect(isPaperType("essay")).toBe(false);
+  });
+
+  test("validates paper source kind values", () => {
+    expect(isPaperSourceKind("pdf")).toBe(true);
+    expect(isPaperSourceKind("latex-zip")).toBe(true);
+    expect(isPaperSourceKind("selection")).toBe(true);
+    expect(isPaperSourceKind("docx")).toBe(false);
   });
 });

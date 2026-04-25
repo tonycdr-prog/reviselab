@@ -14,38 +14,16 @@ import { OVERCLAIMING_PATTERNS } from "./engine-constants";
 import {
   buildFileBaseTexts,
   buildFiles,
-  buildNormalizedManuscript,
   createSuggestion,
+} from "./engine-helpers";
+import { buildSnapshotContext } from "./engine-context";
+import {
+  buildNormalizedManuscript,
   rankCategories,
   tightenAbstract,
-} from "./engine-helpers";
+} from "./engine-text";
 import { RULE_REGISTRY } from "./rules";
-import type {
-  ReviewInput,
-  ReviewSnapshot,
-  SubmissionContext,
-  UploadedPaperRecord,
-} from "./types";
-
-export function createUploadedPaperRecord(
-  input: SubmissionContext & { file?: File | null },
-  ids: { paperId: string; versionId: string },
-  createdAt: string,
-): UploadedPaperRecord {
-  return {
-    paperId: ids.paperId,
-    versionId: ids.versionId,
-    createdAt,
-    context: {
-      title: input.title,
-      abstract: input.abstract,
-      intendedCategory: input.intendedCategory,
-      paperType: input.paperType,
-      firstTimeSubmitter: input.firstTimeSubmitter,
-    },
-    ...(input.file?.name ? { fileName: input.file.name } : {}),
-  };
-}
+import type { ReviewInput, ReviewSnapshot } from "./types";
 
 export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
   const manuscript = buildNormalizedManuscript(input);
@@ -200,13 +178,7 @@ export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
       readiness,
     }),
     generatedAt,
-    context: {
-      title: input.title,
-      abstract: input.abstract,
-      intendedCategory: input.intendedCategory,
-      paperType: input.paperType,
-      firstTimeSubmitter: input.firstTimeSubmitter,
-    },
+    context: buildSnapshotContext(input, manuscript),
     overview: describeOverview(readiness),
     manuscript,
     files,
@@ -224,20 +196,4 @@ export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
       generatedAt,
     },
   };
-}
-
-export function createSampleReview(overrides?: Partial<SubmissionContext>) {
-  return generateReviewSnapshot({
-    paperId: "paper_demo",
-    versionId: "version_demo",
-    title:
-      overrides?.title ??
-      "A Benchmark for Retrieval-Augmented Review Assistants in Scientific Writing",
-    abstract:
-      overrides?.abstract ??
-      "We study retrieval-augmented assistants for scientific writing review. Our benchmark compares category fit, tone calibration, and policy-aware revision suggestions across realistic abstract editing tasks. Results show that targeted review signals improve clarity and reduce moderation-risk language without changing the paper's core claims.",
-    intendedCategory: overrides?.intendedCategory ?? "cs.AI",
-    paperType: overrides?.paperType ?? "research",
-    firstTimeSubmitter: overrides?.firstTimeSubmitter ?? true,
-  });
 }

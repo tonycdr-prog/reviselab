@@ -1,27 +1,19 @@
 "use client";
 
-import {
-  type ReviewFile,
-  type ReviewSnapshot,
-  type SuggestionAction,
-} from "@reviselab/core";
+import { useEffect, useState } from "react";
+
+import type { ReviewFile, ReviewSnapshot } from "@reviselab/core";
 
 import {
-  Button,
   Column,
-  DataTableSkeleton,
   Grid,
-  InlineNotification,
-  InlineLoading,
   Layer,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
-  Tile,
 } from "../carbon";
-import { ReviewStageTag } from "./review-stage-tag";
 import {
   ChecksPanel,
   CommentsPanel,
@@ -30,52 +22,17 @@ import {
   OverviewPanel,
   ReviewHeader,
   ReviewSidebar,
-  type ReviewWorkspaceTab,
 } from "./review-workspace-panels";
-
-type ReviewWorkspaceRecipeProps = {
-  review: ReviewSnapshot;
-  selectedTab?: ReviewWorkspaceTab;
-  selectedFilePath?: ReviewFile["path"];
-  selectedAnchorId?: string | null;
-  selectedContext?:
-    | {
-        type: "check";
-        id: string;
-      }
-    | {
-        type: "comment";
-        id: string;
-      }
-    | null;
-  isMutatingSuggestion?: boolean;
-  isRetryingReview?: boolean;
-  actionError?: string | null;
-  onRetryReview?: () => void;
-  onSelectTab?: (tab: ReviewWorkspaceTab) => void;
-  onSelectFile?: (path: ReviewFile["path"]) => void;
-  onSelectAnchor?: (anchorId: string) => void;
-  onSelectCheck?: (check: ReviewSnapshot["checks"][number]) => void;
-  onSelectComment?: (comment: ReviewSnapshot["comments"][number]) => void;
-  onSuggestionAction?: (
-    suggestionId: string,
-    action: SuggestionAction,
-    editedText?: string,
-  ) => void;
-};
-
-const TAB_ORDER: ReviewWorkspaceTab[] = [
-  "overview",
-  "checks",
-  "files",
-  "comments",
-  "history",
-];
-
-function getSelectedTabIndex(tab: ReviewWorkspaceTab) {
-  const index = TAB_ORDER.indexOf(tab);
-  return index >= 0 ? index : 0;
-}
+import { ReviewWorkspaceProgress } from "./review-workspace-progress";
+import type {
+  ReviewWorkspaceRecipeProps,
+  SelectedReviewContext,
+} from "./review-workspace-recipe-types";
+import {
+  getSelectedTabIndex,
+  REVIEW_WORKSPACE_TAB_ORDER,
+  type ReviewWorkspaceTab,
+} from "./review-workspace-tabs";
 
 export function ReviewWorkspaceRecipe({
   review,
@@ -94,86 +51,109 @@ export function ReviewWorkspaceRecipe({
   onSelectComment = () => undefined,
   onSuggestionAction = () => undefined,
 }: ReviewWorkspaceRecipeProps) {
+  const [activeTab, setActiveTab] = useState<ReviewWorkspaceTab>(selectedTab);
+  const [activeFilePath, setActiveFilePath] = useState<
+    ReviewFile["path"] | undefined
+  >(selectedFilePath);
+  const [activeAnchorId, setActiveAnchorId] = useState<string | null>(
+    selectedAnchorId ?? null,
+  );
+  const [activeContext, setActiveContext] = useState<SelectedReviewContext>(
+    selectedContext ?? null,
+  );
   const resolvedSelectedFilePath =
-    selectedFilePath ??
+    activeFilePath ??
     review.files.find((file) => file.status !== "resolved")?.path ??
     review.files[0]?.path ??
     "title.md";
+  const isFilesWorkbench = activeTab === "files";
+
+  useEffect(() => {
+    setActiveTab(selectedTab);
+  }, [selectedTab]);
+
+  useEffect(() => {
+    if (selectedFilePath) {
+      setActiveFilePath(selectedFilePath);
+    }
+  }, [selectedFilePath]);
+
+  useEffect(() => {
+    setActiveAnchorId(selectedAnchorId ?? null);
+  }, [selectedAnchorId]);
+
+  useEffect(() => {
+    setActiveContext(selectedContext ?? null);
+  }, [selectedContext]);
+
+  function handleSelectTab(selectedIndex: number) {
+    const nextTab = REVIEW_WORKSPACE_TAB_ORDER[selectedIndex] ?? "overview";
+
+    setActiveTab(nextTab);
+    onSelectTab(nextTab);
+  }
+
+  function handleSelectFile(path: ReviewFile["path"]) {
+    setActiveFilePath(path);
+    setActiveAnchorId(null);
+    setActiveContext(null);
+    onSelectFile(path);
+  }
+
+  function handleSelectAnchor(anchorId: string) {
+    setActiveAnchorId(anchorId);
+    onSelectAnchor(anchorId);
+  }
+
+  function handleSelectCheck(check: ReviewSnapshot["checks"][number]) {
+    setActiveTab("files");
+    if (check.reviewFilePath) {
+      setActiveFilePath(check.reviewFilePath);
+    }
+    setActiveAnchorId(check.anchorId ?? null);
+    setActiveContext({ type: "check", id: check.id });
+    onSelectTab("files");
+    onSelectCheck(check);
+  }
+
+  function handleSelectComment(comment: ReviewSnapshot["comments"][number]) {
+    setActiveTab("files");
+    setActiveFilePath(comment.filePath);
+    setActiveAnchorId(comment.anchorId);
+    setActiveContext({ type: "comment", id: comment.id });
+    onSelectTab("files");
+    onSelectComment(comment);
+  }
 
   if (review.status !== "ready") {
     return (
-      <Grid fullWidth className="rl-page-grid">
-        <Column sm={4} md={8} lg={16}>
-          <Tile className="rl-section" data-review-workspace="canonical">
-            <div className="rl-section-header">
-              <div>
-                <h3>{review.progress.label}</h3>
-                <p className="rl-muted">{review.progress.description}</p>
-              </div>
-              <ReviewStageTag progress={review.progress} />
-            </div>
-            {review.progress.stage === "failed-parse" ||
-            review.progress.stage === "failed-review" ? (
-              <InlineNotification
-                lowContrast
-                kind="error"
-                title={review.progress.label}
-                subtitle={
-                  actionError ?? review.progress.error ?? review.overview
-                }
-              />
-            ) : (
-              <InlineLoading
-                description={
-                  isRetryingReview
-                    ? "Retrying this review"
-                    : review.progress.description
-                }
-                status="active"
-              />
-            )}
-            <DataTableSkeleton
-              columnCount={4}
-              rowCount={4}
-              showHeader={false}
-              headers={[
-                { key: "event", header: "Event" },
-                { key: "detail", header: "Detail" },
-                { key: "file", header: "File" },
-                { key: "created", header: "Created" },
-              ]}
-            />
-            {review.progress.canRetry ? (
-              <div className="rl-toolbar">
-                <Button
-                  type="button"
-                  kind="secondary"
-                  disabled={isRetryingReview}
-                  onClick={onRetryReview}
-                >
-                  Retry review
-                </Button>
-              </div>
-            ) : null}
-          </Tile>
-        </Column>
-      </Grid>
+      <ReviewWorkspaceProgress
+        review={review}
+        isRetryingReview={isRetryingReview}
+        actionError={actionError}
+        onRetryReview={onRetryReview}
+      />
     );
   }
 
   return (
     <Grid fullWidth className="rl-page-grid">
       <Column sm={4} md={8} lg={16}>
-        <div className="rl-review-grid" data-review-workspace="canonical">
+        <div
+          className={
+            isFilesWorkbench
+              ? "rl-review-grid rl-review-grid-workbench"
+              : "rl-review-grid"
+          }
+          data-review-workspace="canonical"
+        >
           <div className="rl-review-main">
             <ReviewHeader review={review} />
 
             <Layer>
               <Tabs
-                selectedIndex={getSelectedTabIndex(selectedTab)}
-                onChange={({ selectedIndex }) =>
-                  onSelectTab(TAB_ORDER[selectedIndex] ?? "overview")
-                }
+                selectedIndex={getSelectedTabIndex(activeTab)}
+                onChange={({ selectedIndex }) => handleSelectTab(selectedIndex)}
               >
                 <TabList aria-label="Review workspace sections" contained>
                   <Tab>Overview</Tab>
@@ -189,26 +169,26 @@ export function ReviewWorkspaceRecipe({
                   <TabPanel>
                     <ChecksPanel
                       review={review}
-                      onSelectCheck={onSelectCheck}
+                      onSelectCheck={handleSelectCheck}
                     />
                   </TabPanel>
                   <TabPanel>
                     <FilesChangedPanel
                       review={review}
                       selectedFilePath={resolvedSelectedFilePath}
-                      selectedAnchorId={selectedAnchorId ?? null}
-                      selectedContext={selectedContext}
+                      selectedAnchorId={activeAnchorId}
+                      selectedContext={activeContext}
                       isMutatingSuggestion={isMutatingSuggestion}
                       actionError={actionError ?? null}
-                      onSelectFile={onSelectFile}
-                      onSelectAnchor={onSelectAnchor}
+                      onSelectFile={handleSelectFile}
+                      onSelectAnchor={handleSelectAnchor}
                       onSuggestionAction={onSuggestionAction}
                     />
                   </TabPanel>
                   <TabPanel>
                     <CommentsPanel
                       review={review}
-                      onSelectComment={onSelectComment}
+                      onSelectComment={handleSelectComment}
                     />
                   </TabPanel>
                   <TabPanel>
@@ -219,7 +199,7 @@ export function ReviewWorkspaceRecipe({
             </Layer>
           </div>
 
-          <ReviewSidebar review={review} />
+          {isFilesWorkbench ? null : <ReviewSidebar review={review} />}
         </div>
       </Column>
     </Grid>

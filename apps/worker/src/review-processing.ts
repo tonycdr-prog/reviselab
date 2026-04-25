@@ -110,11 +110,10 @@ export async function runReview(
       paperId: paperRow.id,
       versionId: versionRow.id,
       reviewId,
-      title: context.title,
-      abstract: context.abstract,
-      intendedCategory: context.intendedCategory,
-      paperType: context.paperType,
-      firstTimeSubmitter: context.firstTimeSubmitter,
+      ...context,
+      sourceKind:
+        context.sourceKind ??
+        (versionRow.source_kind as NonNullable<typeof context.sourceKind>),
       manuscript,
     });
 

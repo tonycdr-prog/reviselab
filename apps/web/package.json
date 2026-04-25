@@ -31,10 +31,12 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbopack": "next dev --turbopack",
     "lint": "eslint .",
     "start": "next start --hostname 127.0.0.1 --port 3000",
     "test": "vitest run",
+    "test:live": "playwright test --config=playwright.live.config.ts",
     "test:visual": "playwright test",
     "typecheck": "tsc --noEmit"
   }

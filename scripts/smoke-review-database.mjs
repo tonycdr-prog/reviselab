@@ -1,5 +1,6 @@
 import { assert, wait } from "./local-stack-lib.mjs";
 import {
+  deleteArtifact,
   deleteSource,
   makeLatexZip,
   makePdf,
@@ -118,23 +119,90 @@ export async function waitForOutcome(sql, reviewId, timeoutMs) {
 }
 
 export async function assertReadyReview(sql, reviewId) {
-  const [files, checks, comments, suggestions, events] = await Promise.all([
-    sql`select count(*)::int as count from public.review_files where review_id = ${reviewId}`,
-    sql`select count(*)::int as count from public.review_checks where review_id = ${reviewId}`,
-    sql`select count(*)::int as count from public.review_comments where review_id = ${reviewId}`,
-    sql`select id from public.review_suggestions where review_id = ${reviewId} limit 1`,
-    sql`select count(*)::int as count from public.review_events where review_id = ${reviewId}`,
-  ]);
+  const [files, checks, comments, suggestions, events, lifecycleEvents] =
+    await Promise.all([
+      sql`
+        select path, change_count, status, severity
+        from public.review_files
+        where review_id = ${reviewId}
+        order by path
+      `,
+      sql`
+        select rule_id, rule_version, source_url, source_checked_at, evidence_json
+        from public.review_checks
+        where review_id = ${reviewId}
+      `,
+      sql`select count(*)::int as count from public.review_comments where review_id = ${reviewId}`,
+      sql`
+        select id, review_file_id, status, anchor_json, diff_stats_json
+        from public.review_suggestions
+        where review_id = ${reviewId}
+        limit 1
+      `,
+      sql`select count(*)::int as count from public.review_events where review_id = ${reviewId}`,
+      sql`
+        select event_kind
+        from public.review_events
+        where review_id = ${reviewId}
+          and event_kind in ('parse_completed', 'review_completed')
+      `,
+    ]);
 
-  assert(files[0].count >= 4, "Expected canonical review files to persist.");
-  assert(checks[0].count > 0, "Expected review checks to persist.");
+  const filePaths = new Set(files.map((file) => file.path));
+
+  assert(filePaths.has("title.md"), "Expected title.md to persist.");
+  assert(filePaths.has("abstract.md"), "Expected abstract.md to persist.");
+  assert(filePaths.has("metadata.yml"), "Expected metadata.yml to persist.");
+  assert(
+    filePaths.has("submission_notes.md"),
+    "Expected submission_notes.md to persist.",
+  );
+  assert(checks.length > 0, "Expected review checks to persist.");
+  assert(
+    checks.every(
+      (check) =>
+        check.rule_id &&
+        check.rule_version &&
+        check.source_url &&
+        check.source_checked_at &&
+        Array.isArray(check.evidence_json),
+    ),
+    "Expected source-backed deterministic check evidence to persist.",
+  );
   assert(comments[0].count > 0, "Expected review comments to persist.");
   assert(suggestions.length > 0, "Expected review suggestions to persist.");
+  assert(
+    suggestions.every(
+      (suggestion) =>
+        suggestion.review_file_id &&
+        suggestion.anchor_json &&
+        suggestion.diff_stats_json,
+    ),
+    "Expected suggestions to include durable file, anchor, and diff metadata.",
+  );
   assert(events[0].count > 0, "Expected review events to persist.");
+  assert(
+    lifecycleEvents.some((event) => event.event_kind === "parse_completed"),
+    "Expected parse completion event to persist.",
+  );
+  assert(
+    lifecycleEvents.some((event) => event.event_kind === "review_completed"),
+    "Expected review completion event to persist.",
+  );
 }
 
 export async function cleanupSmokeReview(sql, env, smokeReview) {
+  const versions = await sql`
+    select parse_artifact_path
+    from public.paper_versions
+    where id = ${smokeReview.versionId}
+  `;
+  const artifactPath = versions[0]?.parse_artifact_path;
+
   await deleteSource(env, smokeReview.sourcePath);
+  if (artifactPath) {
+    await deleteArtifact(env, artifactPath);
+  }
 
   await sql.begin(async (tx) => {
     await tx`delete from public.papers where id = ${smokeReview.paperId}`;
