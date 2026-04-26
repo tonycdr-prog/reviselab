@@ -25,7 +25,9 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 REVISELAB_SITE_URL=https://reviselab-production.up.railway.app
+REVISELAB_DIAGNOSTICS_ENABLED=false
 DATABASE_URL=
+GROBID_URL=
 ```
 
 Use the Supabase pooler connection string for `DATABASE_URL`, not the direct
@@ -34,6 +36,10 @@ IPv6-only `db.<project>.supabase.co:5432` URL.
 `REVISELAB_SITE_URL` is required for auth. Magic-link and OAuth callbacks use
 this value instead of Railway's internal request origin, which prevents email
 links from being generated with internal hosts such as `0.0.0.0`.
+
+Keep `REVISELAB_DIAGNOSTICS_ENABLED=false` in production unless actively
+debugging. When it is not `true`, `/settings/diagnostics` returns a 404 and the
+Diagnostics nav item is hidden from signed-in users.
 
 ## Worker service
 

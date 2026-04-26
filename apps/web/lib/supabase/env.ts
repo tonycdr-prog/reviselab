@@ -36,6 +36,10 @@ export function getSiteUrl() {
   );
 }
 
+export function isDiagnosticsEnabled() {
+  return process.env.REVISELAB_DIAGNOSTICS_ENABLED === "true";
+}
+
 export function isDirectHostedSupabaseDatabaseUrl(
   databaseUrl = getDatabaseUrl(),
 ) {

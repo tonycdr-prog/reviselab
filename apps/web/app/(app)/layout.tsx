@@ -5,6 +5,7 @@ import { AppHeader } from "@reviselab/ui";
 import { Content } from "@reviselab/ui/carbon";
 
 import { getViewerContext } from "@/lib/auth/session";
+import { isDiagnosticsEnabled } from "@/lib/supabase/env";
 
 export default async function DashboardLayout({
   children,
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
         brandName={brandConfig.name}
         authHref="/auth/sign-out"
         authLabel="Sign out"
+        showDiagnostics={isDiagnosticsEnabled()}
       />
       <Content>
         <main id="main-content" className="rl-main">

@@ -10,6 +10,8 @@ import {
   getLiveStackDiagnostics,
   type DiagnosticStatus,
 } from "@/lib/diagnostics/live-stack";
+import { isDiagnosticsEnabled } from "@/lib/supabase/env";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,6 +28,10 @@ function getTagType(status: DiagnosticStatus) {
 }
 
 export default async function DiagnosticsPage() {
+  if (!isDiagnosticsEnabled()) {
+    notFound();
+  }
+
   const diagnostics = await getLiveStackDiagnostics();
   const hasError = diagnostics.checks.some((check) => check.status === "error");
   const hasWarning = diagnostics.checks.some(
