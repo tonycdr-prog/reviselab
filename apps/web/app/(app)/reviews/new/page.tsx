@@ -2,6 +2,9 @@ import { Column, Grid, Tile } from "@reviselab/ui/carbon";
 
 import { UploadReviewForm } from "@/components/upload-review-form";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function NewReviewPage() {
   return (
     <Grid fullWidth className="rl-page-grid rl-new-review-layout">

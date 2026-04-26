@@ -4,6 +4,9 @@ import { Button, Column, Grid, Tile } from "@reviselab/ui/carbon";
 import { DashboardLiveRefresh } from "@/components/dashboard-live-refresh";
 import { listDashboardReviews } from "@/lib/reviews/repository";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const reviews = await listDashboardReviews();
 

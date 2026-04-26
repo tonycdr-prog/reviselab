@@ -2,6 +2,9 @@ import { Column, Grid, Tile } from "@reviselab/ui/carbon";
 
 import { ExtensionPairingTile } from "@/components/extension-pairing-tile";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function IntegrationsPage() {
   return (
     <Grid fullWidth className="rl-page-grid">

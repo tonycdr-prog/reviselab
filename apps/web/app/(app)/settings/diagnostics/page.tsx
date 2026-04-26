@@ -11,6 +11,9 @@ import {
   type DiagnosticStatus,
 } from "@/lib/diagnostics/live-stack";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function getTagType(status: DiagnosticStatus) {
   switch (status) {
     case "ok":
