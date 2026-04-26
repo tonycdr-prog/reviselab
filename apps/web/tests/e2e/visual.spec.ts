@@ -95,7 +95,7 @@ for (const preview of previewPages) {
 
     await expect(page).toHaveScreenshot(`${preview.name}.png`, {
       animations: "disabled",
-      fullPage: true,
+      fullPage: false,
       // Keep layout regressions covered while allowing CI/Linux font rasterization drift.
       maxDiffPixelRatio: 0.08,
     });
