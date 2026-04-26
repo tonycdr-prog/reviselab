@@ -2,6 +2,7 @@ import {
   getHostedPoolerMessage,
   isDirectHostedSupabaseDatabaseUrl,
   isHostedSupabaseUrl,
+  isLocalDatabaseUrl,
   readEnvFile,
 } from "./local-stack-lib.mjs";
 
@@ -23,6 +24,10 @@ function assertHostedSupabase(env, fileName) {
 
   if (!isHostedSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL)) {
     fail(`${fileName} NEXT_PUBLIC_SUPABASE_URL must point at hosted Supabase.`);
+  }
+
+  if (isLocalDatabaseUrl(env.DATABASE_URL)) {
+    fail(`${fileName} DATABASE_URL must point at hosted Supabase.`);
   }
 
   if (isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL)) {
