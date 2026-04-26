@@ -7,6 +7,7 @@ const PLAYWRIGHT_PORT = 3100;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   use: {
     baseURL: `http://127.0.0.1:${PLAYWRIGHT_PORT}`,
   },
