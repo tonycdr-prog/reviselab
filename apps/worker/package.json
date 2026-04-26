@@ -10,15 +10,14 @@
     "jszip": "^3.10.1",
     "kysely": "^0.28.16",
     "kysely-postgres-js": "^3.0.0",
-    "postgres": "^3.4.9"
-  },
-  "devDependencies": {
+    "postgres": "^3.4.9",
     "tsx": "^4.21.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/index.ts",
     "lint": "node ../../scripts/check-guardrails.mjs --scope apps/worker",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }

@@ -148,7 +148,6 @@ importers:
       postgres:
         specifier: ^3.4.9
         version: 3.4.9
-    devDependencies:
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
