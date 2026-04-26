@@ -7,7 +7,8 @@ the first Railway service.
 ## Web service
 
 Use the repository root as the Railway root directory. The tracked
-`railway.json` provides:
+`railway.json` dispatches by `RAILWAY_SERVICE_NAME` and runs the web commands
+for the `reviselab` service:
 
 ```sh
 pnpm --filter @reviselab/web build
@@ -31,9 +32,9 @@ IPv6-only `db.<project>.supabase.co:5432` URL.
 
 ## Worker service
 
-Deploy the worker as a separate Railway service from the same repo. Override
-the service build/start commands in Railway settings instead of reusing the web
-`railway.json`:
+Deploy the worker as a separate Railway service from the same repo. Name the
+service `reviselab-worker`; the tracked `railway.json` dispatches to the worker
+commands when `RAILWAY_SERVICE_NAME` contains `worker`:
 
 ```sh
 pnpm --filter @reviselab/worker build

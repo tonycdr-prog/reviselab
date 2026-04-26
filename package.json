@@ -32,6 +32,8 @@
     "lint": "pnpm clean && pnpm -r --if-present lint && node ./scripts/check-guardrails.mjs",
     "prod:check": "node ./scripts/check-production-readiness.mjs",
     "qa:real-manuscripts": "node ./scripts/evaluate-real-manuscripts.mjs",
+    "railway:build": "node ./scripts/railway-command.mjs build",
+    "railway:start": "node ./scripts/railway-command.mjs start",
     "rules:precision": "node ./scripts/rules-precision.mjs",
     "rules:precision:llm": "node ./scripts/rules-precision-llm.mjs",
     "smoke:hosted": "node ./scripts/smoke-hosted-review.mjs",
