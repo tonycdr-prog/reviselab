@@ -217,6 +217,30 @@ a {
   color: var(--cds-text-secondary);
 }
 
+.rl-metric {
+  margin: 0;
+  font-size: var(--cds-heading-04-font-size);
+  font-weight: var(--cds-heading-04-font-weight);
+  line-height: var(--cds-heading-04-line-height);
+  letter-spacing: var(--cds-heading-04-letter-spacing);
+}
+
+.rl-stack {
+  display: grid;
+  gap: var(--cds-spacing-05);
+}
+
+.rl-admin-event {
+  display: grid;
+  gap: var(--cds-spacing-02);
+  padding-block: var(--cds-spacing-04);
+  border-block-start: 1px solid var(--cds-border-subtle);
+}
+
+.rl-admin-event p {
+  margin: 0;
+}
+
 @media (min-width: 1056px) {
   .rl-header-actions {
     inline-size: auto;

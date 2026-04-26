@@ -66,7 +66,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    await getViewerContext();
+    const viewer = await getViewerContext();
+    const redirectUrl = new URL(nextPath, url.origin);
+
+    if (viewer?.createdWorkspace && redirectUrl.pathname === "/dashboard") {
+      redirectUrl.searchParams.set("welcome", "workspace-created");
+    }
+
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     return NextResponse.redirect(
       new URL(
@@ -79,6 +86,4 @@ export async function GET(request: Request) {
       ),
     );
   }
-
-  return NextResponse.redirect(new URL(nextPath, url.origin));
 }

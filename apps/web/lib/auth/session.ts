@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPlatformAdminEmails } from "@/lib/supabase/env";
 
 const DEFAULT_SIGN_IN_PATH = "/auth/sign-in";
 
@@ -11,6 +12,8 @@ export type ViewerContext = {
   email: string | null;
   displayName: string | null;
   workspaceId: string;
+  isPlatformAdmin: boolean;
+  createdWorkspace: boolean;
 };
 
 function throwIfSupabaseError(
@@ -94,6 +97,7 @@ export async function getViewerContext(): Promise<ViewerContext | null> {
   throwIfSupabaseError(membershipError, "Unable to load workspace membership.");
 
   const workspaceId = membership?.workspace_id ?? buildWorkspaceId(userId);
+  const createdWorkspace = !membership;
 
   if (!membership) {
     const { error: workspaceError } = await supabase.from("workspaces").upsert(
@@ -134,6 +138,10 @@ export async function getViewerContext(): Promise<ViewerContext | null> {
     email,
     displayName,
     workspaceId,
+    isPlatformAdmin: email
+      ? getPlatformAdminEmails().includes(email.toLowerCase())
+      : false,
+    createdWorkspace,
   };
 }
 

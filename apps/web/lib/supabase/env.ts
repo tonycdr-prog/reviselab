@@ -40,6 +40,13 @@ export function isDiagnosticsEnabled() {
   return process.env.REVISELAB_DIAGNOSTICS_ENABLED === "true";
 }
 
+export function getPlatformAdminEmails() {
+  return (process.env.REVISELAB_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export function isDirectHostedSupabaseDatabaseUrl(
   databaseUrl = getDatabaseUrl(),
 ) {
