@@ -2,7 +2,30 @@ import "server-only";
 
 import { headers } from "next/headers";
 
+import { getSiteUrl } from "@/lib/supabase/env";
+
+function getConfiguredSiteOrigin() {
+  const configuredUrl = getSiteUrl();
+
+  if (!configuredUrl) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(configuredUrl);
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
 export async function getRequestOrigin() {
+  const configuredSiteOrigin = getConfiguredSiteOrigin();
+
+  if (configuredSiteOrigin) {
+    return configuredSiteOrigin;
+  }
+
   const headerStore = await headers();
   const origin = headerStore.get("origin");
 

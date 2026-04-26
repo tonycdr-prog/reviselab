@@ -30,6 +30,12 @@ export function getGrobidUrl() {
   return process.env.GROBID_URL ?? null;
 }
 
+export function getSiteUrl() {
+  return (
+    process.env.REVISELAB_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? null
+  );
+}
+
 export function isDirectHostedSupabaseDatabaseUrl(
   databaseUrl = getDatabaseUrl(),
 ) {

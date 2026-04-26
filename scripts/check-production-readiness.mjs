@@ -20,6 +20,7 @@ function assertHostedSupabase(env, fileName) {
   requireValue(env, "NEXT_PUBLIC_SUPABASE_URL", fileName);
   requireValue(env, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", fileName);
   requireValue(env, "SUPABASE_SERVICE_ROLE_KEY", fileName);
+  requireValue(env, "REVISELAB_SITE_URL", fileName);
   requireValue(env, "DATABASE_URL", fileName);
 
   if (!isHostedSupabaseUrl(env.NEXT_PUBLIC_SUPABASE_URL)) {
@@ -32,6 +33,15 @@ function assertHostedSupabase(env, fileName) {
 
   if (isDirectHostedSupabaseDatabaseUrl(env.DATABASE_URL)) {
     fail(getHostedPoolerMessage());
+  }
+
+  try {
+    const siteUrl = new URL(env.REVISELAB_SITE_URL);
+    if (siteUrl.protocol !== "https:") {
+      fail(`${fileName} REVISELAB_SITE_URL must use https in production.`);
+    }
+  } catch {
+    fail(`${fileName} REVISELAB_SITE_URL must be a valid URL.`);
   }
 }
 
@@ -78,6 +88,7 @@ try {
 
   console.log("Production readiness env check passed.");
   console.log("- Hosted Supabase URL is configured.");
+  console.log("- Production auth site URL is configured.");
   console.log(
     "- DATABASE_URL is not the direct hosted IPv6-prone Postgres URL.",
   );
