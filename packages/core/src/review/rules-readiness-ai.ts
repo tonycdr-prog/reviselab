@@ -6,8 +6,8 @@ import {
   createRuleVersion,
 } from "./rules-shared";
 
-const GENERATIVE_AI_PATTERN =
-  /\b(chatgpt|gpt-4|gpt4|large language model|llm|generative ai|ai-assisted|ai assisted|text-to-text generative)\b/i;
+const AI_DISCLOSURE_PATTERN =
+  /\b(chatgpt|gpt-4|gpt4|generative ai|ai-assisted|ai assisted|text-to-text generative|llm-generated|language-tool assistance)\b/i;
 
 function disclosureText(context: {
   aiDisclosureText?: string;
@@ -23,16 +23,10 @@ export const AI_DISCLOSURE_RULE: ReviewRule = {
   id: "ai-disclosure-risk",
   version: createRuleVersion("readiness.4"),
   run(context) {
-    const combinedText = [
-      context.input.title,
-      context.input.abstract,
-      context.manuscript.rawText,
-      context.input.comments,
-    ].join("\n");
-    const mentionsAi = GENERATIVE_AI_PATTERN.test(combinedText);
+    const submissionDisclosureText = disclosureText(context.input);
+    const mentionsAi = AI_DISCLOSURE_PATTERN.test(submissionDisclosureText);
     const declaredAiUse = context.input.aiAssistanceUsed === true;
-    const disclosure = disclosureText(context.input);
-    const hasDisclosure = GENERATIVE_AI_PATTERN.test(disclosure);
+    const hasDisclosure = AI_DISCLOSURE_PATTERN.test(submissionDisclosureText);
     const needsDisclosure = (mentionsAi || declaredAiUse) && !hasDisclosure;
 
     return {
@@ -63,7 +57,7 @@ export const AI_DISCLOSURE_RULE: ReviewRule = {
             ),
             createEvidence(
               "Disclosure text",
-              disclosure || "Missing",
+              submissionDisclosureText || "Missing",
               MODERATION_SOURCE,
               needsDisclosure ? "warning" : "info",
             ),

@@ -19,6 +19,8 @@ export type RuleContext = {
   manuscript: NormalizedManuscript;
   bestCategory: string;
   categoryScore: number;
+  selectedCategoryScore: number;
+  categoryScoreMargin: number;
   hasOverclaiming: boolean;
   summarySuggestionId: string;
   abstractSuggestionId: string;

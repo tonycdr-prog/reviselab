@@ -3,6 +3,7 @@ export * from "./engine-record";
 export * from "./engine-sample";
 export * from "./lifecycle";
 export * from "./paper-metadata";
+export * from "./rule-precision";
 export * from "./rules";
 export * from "./rules-catalog";
 export * from "./types";

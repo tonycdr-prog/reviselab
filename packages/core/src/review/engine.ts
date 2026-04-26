@@ -31,9 +31,14 @@ export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
   const rankedCategories = rankCategories(combinedText);
   const bestCategory = rankedCategories[0]?.category ?? input.intendedCategory;
   const categoryScore = rankedCategories[0]?.score ?? 0;
-  const lowerText = combinedText.toLowerCase();
+  const selectedCategoryScore =
+    rankedCategories.find(
+      (category) => category.category === input.intendedCategory,
+    )?.score ?? 0;
+  const categoryScoreMargin = categoryScore - selectedCategoryScore;
+  const highRiskClaimText = `${manuscript.title}\n${manuscript.abstract}`;
   const hasOverclaiming = OVERCLAIMING_PATTERNS.some((pattern) =>
-    lowerText.includes(pattern),
+    pattern.test(highRiskClaimText),
   );
   const generatedAt = nowIso();
 
@@ -87,7 +92,9 @@ export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
   });
 
   const metadataSuggestion =
-    bestCategory !== input.intendedCategory && categoryScore > 0
+    bestCategory !== input.intendedCategory &&
+    categoryScore >= 2 &&
+    categoryScoreMargin >= 4
       ? createSuggestion({
           filePath: "metadata.yml",
           title: "Adjust intended category",
@@ -115,6 +122,8 @@ export function generateReviewSnapshot(input: ReviewInput): ReviewSnapshot {
       manuscript,
       bestCategory,
       categoryScore,
+      selectedCategoryScore,
+      categoryScoreMargin,
       hasOverclaiming,
       summarySuggestionId: summarySuggestion.id,
       abstractSuggestionId: abstractSuggestion.id,

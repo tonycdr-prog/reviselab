@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "description": "Gold labels for the local 10-manuscript CS/AI rule-precision smoke set. These labels evaluate submission-readiness checks, not scientific merit.",
+  "manuscripts": [
+    {
+      "arxivId": "1706.03762",
+      "title": "Attention Is All You Need",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The manuscript topic involves neural sequence models; that is not evidence of undisclosed generative AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CL category is plausible for transformer language modeling work."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The real arXiv PDF provides title and abstract; incomplete PDF author extraction should not warn by itself."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Canonical research-paper phrasing should not warn without a high-risk anchored title or abstract claim."
+        }
+      }
+    },
+    {
+      "arxivId": "1810.04805",
+      "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Language-model subject matter is not evidence of undisclosed AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CL category is plausible for language representation learning."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The real arXiv PDF provides enough required metadata for this smoke pass."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Benchmark and performance claims are expected in abstracts when not absolute or promotional."
+        }
+      }
+    },
+    {
+      "arxivId": "2005.14165",
+      "title": "Language Models are Few-Shot Learners",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The paper studies language models; the title is not an AI-writing-disclosure signal."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CL category is plausible for few-shot language modeling."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Extracted title and abstract are sufficient; missing extracted authors alone should not warn."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Few-shot learner wording is descriptive, not a submission-risk overclaim by itself."
+        }
+      }
+    },
+    {
+      "arxivId": "2010.11929",
+      "title": "An Image is Worth 16x16 Words",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Vision transformer subject matter is not AI-writing-assistance evidence."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CV category is plausible for image recognition work."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The PDF provides required title and abstract metadata."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The title is stylized but not a high-risk absolute submission claim."
+        }
+      }
+    },
+    {
+      "arxivId": "2103.00020",
+      "title": "Learning Transferable Visual Models From Natural Language",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Natural-language supervision is paper subject matter, not AI-writing-disclosure evidence."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CV category is plausible for visual model work."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The PDF contains title and abstract metadata."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Transferability claims should not warn unless absolute or unsupported by anchor text."
+        }
+      }
+    },
+    {
+      "arxivId": "2106.09685",
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Large language model subject matter is not an AI-writing-assistance disclosure signal."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CL category is plausible for large-language-model adaptation."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Extracted title and abstract are enough for required metadata readiness."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Efficiency claims should not warn without absolute anchored language."
+        }
+      }
+    },
+    {
+      "arxivId": "2006.11239",
+      "title": "Denoising Diffusion Probabilistic Models",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Generative-model subject matter is not evidence of generative AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/LG category is plausible for probabilistic generative modeling."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The PDF provides required title and abstract fields."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Model naming and result discussion are not overclaiming without high-risk anchor phrases."
+        }
+      }
+    },
+    {
+      "arxivId": "2112.10752",
+      "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Image-synthesis subject matter is not a disclosure signal for AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CV category is plausible for image synthesis work."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Title and abstract extraction is sufficient for this smoke pass."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "High-resolution image synthesis wording is technical, not promotional by itself."
+        }
+      }
+    },
+    {
+      "arxivId": "2201.11903",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Prompting and reasoning subject matter is not evidence of undisclosed AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/CL category is plausible for language-model prompting."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The PDF provides the required title and abstract for readiness checks."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The title makes a technical claim, not an absolute moderation-risk claim."
+        }
+      }
+    },
+    {
+      "arxivId": "2305.14314",
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "labels": {
+        "ai-disclosure-risk": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "LLM subject matter is not evidence of undisclosed AI writing assistance."
+        },
+        "category-fit": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "The selected CS/LG category is plausible for model finetuning methodology."
+        },
+        "missing-metadata": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Required title and abstract metadata are available."
+        },
+        "overclaiming": {
+          "expectedState": "pass",
+          "expectedSeverity": "info",
+          "rationale": "Efficiency wording is acceptable unless paired with absolute unsupported claims."
+        }
+      }
+    }
+  ]
+}

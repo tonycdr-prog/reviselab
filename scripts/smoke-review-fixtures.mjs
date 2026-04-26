@@ -72,7 +72,7 @@ export function makePdf() {
     "A Novel Benchmark for Retrieval-Augmented Review Assistants",
     "ReviseLab Smoke Author",
     "Abstract",
-    "We propose a retrieval augmented review assistant for scientific writing.",
+    "We propose a groundbreaking retrieval augmented review assistant for scientific writing.",
     "The benchmark compares category fit, tone calibration, and policy aware revision suggestions.",
     "Results show targeted review signals improve clarity without changing the paper core claims.",
     "Introduction",

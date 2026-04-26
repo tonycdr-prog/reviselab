@@ -33,6 +33,7 @@ const SCAN_ROOTS = scope
       "packages",
       "supabase",
       "docs",
+      "infra",
       "scripts",
       ...ROOT_FILES,
     ];

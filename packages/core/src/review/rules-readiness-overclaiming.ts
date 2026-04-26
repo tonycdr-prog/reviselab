@@ -27,6 +27,14 @@ export const OVERCLAIMING_RULE: ReviewRule = {
             reviewFilePath: "abstract.md",
             anchorId: context.abstractAnchorId,
             linkedSuggestionIds: [context.abstractSuggestionId],
+            evidence: [
+              createEvidence(
+                "Evidence window",
+                "Title and abstract",
+                OVERCLAIMING_SOURCE,
+                "info",
+              ),
+            ],
           }),
         ],
       };
