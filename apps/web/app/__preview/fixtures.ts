@@ -9,6 +9,26 @@ export const PREVIEW_TIMESTAMP = "2026-04-23T08:01:00.000Z";
 
 export function createPreviewReview(overrides?: Partial<SubmissionContext>) {
   const review = createSampleReview(overrides);
+  const abstractSuggestion = review.suggestions.find(
+    (suggestion) => suggestion.filePath === "abstract.md",
+  );
+  const comments =
+    review.comments.length > 0 || !abstractSuggestion
+      ? review.comments
+      : [
+          {
+            id: "comment_preview_abstract_context",
+            ruleId: "preview-linked-comment",
+            ruleVersion: "preview",
+            target: "Abstract",
+            filePath: "abstract.md" as const,
+            anchorId: abstractSuggestion.anchor.id,
+            severity: "info" as const,
+            body: "Use the linked diff to review the abstract suggestion in context.",
+            sourceUrl: "https://info.arxiv.org/help/moderation/index.html",
+            linkedSuggestionIds: [abstractSuggestion.id],
+          },
+        ];
 
   return {
     ...review,
@@ -24,6 +44,7 @@ export function createPreviewReview(overrides?: Partial<SubmissionContext>) {
           }
         : suggestion,
     ),
+    comments,
     history: review.history.map((event) => ({
       ...event,
       createdAt: PREVIEW_TIMESTAMP,

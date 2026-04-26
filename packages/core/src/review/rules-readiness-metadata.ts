@@ -34,9 +34,6 @@ export const METADATA_RULE: ReviewRule = {
     }
     if (abstractLength > 1920)
       blockerIssues.push("abstract over 1920 characters");
-    if (context.manuscript.authors.length === 0) {
-      warningIssues.push("authors were not extracted");
-    }
     if (
       !hasAsciiOnly(context.input.title) ||
       !hasAsciiOnly(context.input.abstract)
@@ -94,7 +91,7 @@ export const METADATA_RULE: ReviewRule = {
               "Authors extracted",
               context.manuscript.authors.length > 0,
               METADATA_SOURCE,
-              context.manuscript.authors.length > 0 ? "info" : "warning",
+              "info",
             ),
             createEvidence(
               "Comments field",

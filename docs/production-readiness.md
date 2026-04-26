@@ -13,7 +13,7 @@ accidentally hit hosted data.
 - A worker runtime with `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`,
   `SUPABASE_SERVICE_ROLE_KEY`, and `GROBID_URL`.
 - A GROBID service reachable from the worker. The web app never talks to GROBID
-  directly.
+  directly. The default deployable config lives in `infra/grobid`.
 - Backups, deletion cleanup, and queue retry monitoring before broader beta use.
 
 ## Environment rules
@@ -33,6 +33,7 @@ Run these before production smoke testing:
 ```sh
 pnpm prod:check
 pnpm dev:hosted:check
+pnpm grobid:check
 pnpm test:hosted
 ```
 
@@ -46,6 +47,19 @@ pnpm smoke:hosted:pdf
 If the hosted GROBID service is intentionally unavailable during setup, use
 `pnpm smoke:hosted:pdf:expect-failure` to verify the failure path only. Do not
 use that as the production go/no-go.
+
+## Hosted GROBID
+
+- Default image: `grobid/grobid:0.8.2-crf`, matching local development and CI.
+- JVM options: `JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport` to avoid JVM
+  cgroup metrics crashes on hosted container runtimes.
+- Health check: `GET /api/isalive`.
+- Parser endpoint: `POST /api/processFulltextDocument`.
+- Initial Fly.io sizing: 2 shared CPUs, 4 GB memory, one always-running
+  machine. Increase memory before increasing concurrency if PDF parsing starts
+  failing under load.
+- Parser downtime is a user-visible `failed-parse` state and retry path. Do not
+  reintroduce metadata-only PDF fallback in authenticated/live flows.
 
 ## Production go/no-go
 

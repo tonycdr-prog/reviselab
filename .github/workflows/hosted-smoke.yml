@@ -28,8 +28,30 @@ jobs:
           node-version: 24.14.0
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - name: Start GROBID for hosted PDF smoke
+        if: ${{ inputs.include_pdf == 'true' }}
+        run: |
+          docker run -d \
+            --name reviselab-grobid \
+            --platform linux/amd64 \
+            --env JAVA_TOOL_OPTIONS="-XX:-UseContainerSupport" \
+            --entrypoint ./grobid-service/bin/grobid-service \
+            -p 8070:8070 \
+            grobid/grobid:0.8.2-crf
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8070/api/isalive >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs reviselab-grobid || true
+          exit 1
       - name: Write hosted env files
         run: |
+          GROBID_RUNTIME_URL="${GROBID_URL}"
+          if [ "${INCLUDE_PDF}" = "true" ]; then
+            GROBID_RUNTIME_URL="http://127.0.0.1:8070"
+          fi
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}"
@@ -40,9 +62,10 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}"
             echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
             echo "DATABASE_URL=${DATABASE_URL}"
-            echo "GROBID_URL=${GROBID_URL}"
+            echo "GROBID_URL=${GROBID_RUNTIME_URL}"
           } > apps/worker/.env.local
         env:
+          INCLUDE_PDF: ${{ inputs.include_pdf }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -50,6 +73,8 @@ jobs:
           GROBID_URL: ${{ secrets.GROBID_URL }}
       - run: pnpm prod:check
       - run: pnpm dev:hosted:check
+      - if: ${{ inputs.include_pdf == 'true' }}
+        run: pnpm grobid:check
       - name: Start hosted worker
         run: |
           pnpm --filter @reviselab/worker dev > .hosted-worker.log 2>&1 &
@@ -65,9 +90,22 @@ jobs:
       - name: Print hosted worker log on failure
         if: ${{ failure() }}
         run: tail -200 .hosted-worker.log || true
+      - name: Upload hosted smoke failure artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: hosted-smoke-failure-artifacts
+          path: |
+            .hosted-worker.log
+            .local-runtime/hosted-smoke-report.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Stop hosted worker
         if: ${{ always() }}
         run: |
           if [ -f .hosted-worker.pid ]; then
             kill "$(cat .hosted-worker.pid)" 2>/dev/null || true
           fi
+      - name: Stop GROBID
+        if: ${{ always() && inputs.include_pdf == 'true' }}
+        run: docker rm -f reviselab-grobid || true

@@ -12,3 +12,4 @@ test-results
 supabase/.temp
 pnpm-lock.yaml
 packages/core/src/generated
+infra/grobid/fly.toml

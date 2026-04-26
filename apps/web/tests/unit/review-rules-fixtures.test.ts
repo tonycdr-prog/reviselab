@@ -105,6 +105,25 @@ describe("deterministic readiness rule fixtures", () => {
     expect(check.detail).toContain("primary category");
   });
 
+  test("missing author extraction alone does not warn on healthy metadata", () => {
+    const snapshot = reviewRuleFixture({
+      manuscript: {
+        sourceKind: "pdf",
+        title: baseRuleFixtureInput.title,
+        abstract: baseRuleFixtureInput.abstract,
+        authors: [],
+        sections: [],
+        references: [],
+        rawText: `${baseRuleFixtureInput.title}\n\n${baseRuleFixtureInput.abstract}`,
+        parseDiagnostics: ["Parsed with GROBID full-text extraction."],
+      },
+    });
+    const check = expectTraceableRule(snapshot, "missing-metadata");
+
+    expect(check.state).toBe("pass");
+    expect(check.severity).toBe("info");
+  });
+
   test("AI disclosure warnings stay in submission notes", () => {
     const snapshot = reviewRuleFixture({
       aiAssistanceUsed: true,
@@ -115,6 +134,19 @@ describe("deterministic readiness rule fixtures", () => {
     expect(check.state).toBe("warn");
     expect(check.reviewFilePath).toBe("submission_notes.md");
     expect(check.detail).toContain("AI tools must not be listed as authors");
+  });
+
+  test("AI subject matter does not trigger disclosure warnings", () => {
+    const snapshot = reviewRuleFixture({
+      title: "Efficient Finetuning of Quantized LLMs",
+      abstract:
+        "We evaluate large language model finetuning methods for efficient adaptation and report experiments across language modeling benchmarks.",
+      comments: "12 pages.",
+    });
+    const check = expectTraceableRule(snapshot, "ai-disclosure-risk");
+
+    expect(check.state).toBe("pass");
+    expect(check.severity).toBe("info");
   });
 
   test("overclaiming warnings link to an abstract anchor", () => {
@@ -130,6 +162,30 @@ describe("deterministic readiness rule fixtures", () => {
     expect(
       snapshot.comments.some((comment) => comment.ruleId === "overclaiming"),
     ).toBe(true);
+  });
+
+  test("ordinary benchmark language does not trigger overclaiming", () => {
+    const snapshot = reviewRuleFixture({
+      title: "A Benchmark for Retrieval-Augmented Review Assistants",
+      abstract:
+        "We compare retrieval-augmented review assistants across scientific writing tasks and report where the method improves category-fit evidence.",
+    });
+    const check = expectTraceableRule(snapshot, "overclaiming");
+
+    expect(check.state).toBe("pass");
+    expect(check.severity).toBe("info");
+  });
+
+  test("category-fit passes when the score margin is weak", () => {
+    const snapshot = reviewRuleFixture({
+      intendedCategory: "cs.AI",
+      abstract:
+        "We study reasoning agents that learn from feedback while preserving planning evidence for manuscript review.",
+    });
+    const check = expectTraceableRule(snapshot, "category-fit");
+
+    expect(check.state).toBe("pass");
+    expect(check.severity).toBe("info");
   });
 
   test("LaTeX source package issues warn with source-readiness evidence", () => {

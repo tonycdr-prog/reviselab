@@ -220,9 +220,23 @@ async function createRealReview(sql, env, candidate, pdfPath) {
 async function summarizeReview(sql, reviewId) {
   const [checks, files, comments, suggestions] = await Promise.all([
     sql`
-      select rule_id, state, severity
+      select
+        review_checks.rule_id,
+        review_checks.rule_version,
+        review_checks.name,
+        review_checks.state,
+        review_checks.severity,
+        review_checks.summary,
+        review_checks.detail,
+        review_checks.source_url,
+        review_checks.source_checked_at::text as source_checked_at,
+        review_checks.evidence_json,
+        review_checks.anchor_id,
+        review_files.path as review_file_path
       from public.review_checks
-      where review_id = ${reviewId}
+      left join public.review_files
+        on review_files.id = review_checks.review_file_id
+      where review_checks.review_id = ${reviewId}
       order by rule_id
     `,
     sql`

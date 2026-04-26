@@ -13,7 +13,8 @@ const CATEGORY_FIT_RULE: ReviewRule = {
   run(context) {
     if (
       context.bestCategory !== context.input.intendedCategory &&
-      context.categoryScore > 0 &&
+      context.categoryScore >= 2 &&
+      context.categoryScoreMargin >= 4 &&
       context.metadataSuggestionId &&
       context.metadataAnchorId
     ) {
@@ -49,6 +50,18 @@ const CATEGORY_FIT_RULE: ReviewRule = {
               createEvidence(
                 "Keyword score",
                 context.categoryScore,
+                CATEGORY_SOURCE,
+                "info",
+              ),
+              createEvidence(
+                "Selected category keyword score",
+                context.selectedCategoryScore,
+                CATEGORY_SOURCE,
+                "info",
+              ),
+              createEvidence(
+                "Score margin",
+                context.categoryScoreMargin,
                 CATEGORY_SOURCE,
                 "info",
               ),
@@ -102,6 +115,12 @@ const CATEGORY_FIT_RULE: ReviewRule = {
             createEvidence(
               "Best ranked category",
               context.bestCategory,
+              CATEGORY_SOURCE,
+              "info",
+            ),
+            createEvidence(
+              "Score margin",
+              context.categoryScoreMargin,
               CATEGORY_SOURCE,
               "info",
             ),

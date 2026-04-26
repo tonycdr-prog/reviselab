@@ -74,19 +74,15 @@ export const CATEGORY_HINTS: Record<string, string[]> = {
 };
 
 export const OVERCLAIMING_PATTERNS = [
-  "revolutionary",
-  "groundbreaking",
-  "definitive proof",
-  "solves all",
-  "guaranteed",
-  "guarantees",
-  "the first",
-  "first ever",
-  "best",
-  "state-of-the-art",
-  "outperforms all",
-  "proves",
-  "world-changing",
+  /\brevolutionary\b/i,
+  /\bgroundbreaking\b/i,
+  /\bdefinitive proof\b/i,
+  /\bsolves all\b/i,
+  /\bguarantees?\b/i,
+  /\bfirst ever\b/i,
+  /\bworld-changing\b/i,
+  /\bbest\b.{0,80}\b(guaranteed|guarantees?|ever)\b/i,
+  /\bproves?\b.{0,80}\b(all|every|guaranteed|guarantees?|definitive)\b/i,
 ];
 
 export const FILE_TITLES: Record<
