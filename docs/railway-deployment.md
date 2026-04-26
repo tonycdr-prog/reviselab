@@ -26,6 +26,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 REVISELAB_SITE_URL=https://reviselab-production.up.railway.app
 REVISELAB_DIAGNOSTICS_ENABLED=false
+REVISELAB_ADMIN_EMAILS=
 DATABASE_URL=
 GROBID_URL=
 ```
@@ -40,6 +41,11 @@ links from being generated with internal hosts such as `0.0.0.0`.
 Keep `REVISELAB_DIAGNOSTICS_ENABLED=false` in production unless actively
 debugging. When it is not `true`, `/settings/diagnostics` returns a 404 and the
 Diagnostics nav item is hidden from signed-in users.
+
+Set `REVISELAB_ADMIN_EMAILS` to a comma-separated list of trusted operator
+emails. Those users can access `/admin/platform`, which shows private stack
+health, worker heartbeat freshness, queue depth, failure counts, and recent
+parse/review failures.
 
 ## Worker service
 

@@ -6,6 +6,12 @@
     "node": "24.14.0",
     "pnpm": "10.33.0"
   },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.10",
+      "uuid": "^14.0.0"
+    }
+  },
   "scripts": {
     "audit:repo": "pnpm clean && pnpm check && pnpm test:visual && pnpm clean",
     "build": "pnpm -r --if-present build",
@@ -37,6 +43,7 @@
     "rules:precision": "node ./scripts/rules-precision.mjs",
     "rules:precision:llm": "node ./scripts/rules-precision-llm.mjs",
     "smoke:hosted": "node ./scripts/smoke-hosted-review.mjs",
+    "smoke:hosted:auth": "node ./scripts/smoke-auth-redirect.mjs",
     "smoke:hosted:pdf": "node ./scripts/smoke-hosted-review.mjs --pdf",
     "smoke:hosted:pdf:expect-failure": "node ./scripts/smoke-hosted-review.mjs --pdf --expect-failure",
     "smoke:live": "node ./scripts/smoke-live-review.mjs",

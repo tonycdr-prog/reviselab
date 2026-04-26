@@ -10,6 +10,7 @@ type AppHeaderProps = {
   brandName: string;
   authHref?: string;
   authLabel?: string;
+  showAdmin?: boolean;
   showDiagnostics?: boolean;
 };
 
@@ -17,6 +18,7 @@ export function AppHeader({
   brandName,
   authHref = "/auth/sign-in",
   authLabel = "Sign in",
+  showAdmin = false,
   showDiagnostics = false,
 }: AppHeaderProps) {
   return (
@@ -32,6 +34,11 @@ export function AppHeader({
           <HeaderMenuItem href="/settings/integrations">
             Integrations
           </HeaderMenuItem>
+          {showAdmin ? (
+            <HeaderMenuItem href="/admin/platform">
+              Platform admin
+            </HeaderMenuItem>
+          ) : null}
           {showDiagnostics ? (
             <HeaderMenuItem href="/settings/diagnostics">
               Diagnostics

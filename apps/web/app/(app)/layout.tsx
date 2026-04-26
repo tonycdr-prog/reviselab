@@ -24,6 +24,7 @@ export default async function DashboardLayout({
         brandName={brandConfig.name}
         authHref="/auth/sign-out"
         authLabel="Sign out"
+        showAdmin={viewer.isPlatformAdmin}
         showDiagnostics={isDiagnosticsEnabled()}
       />
       <Content>
