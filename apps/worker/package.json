@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@reviselab/core": "workspace:*",
-    "@supabase/supabase-js": "^2.104.0",
+    "@supabase/supabase-js": "^2.104.1",
     "@unified-latex/unified-latex": "^1.8.4",
     "jszip": "^3.10.1",
     "kysely": "^0.28.16",
