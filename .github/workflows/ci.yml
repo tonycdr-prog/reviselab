@@ -31,6 +31,9 @@ jobs:
       - run: pnpm test
       - run: pnpm test:visual
       - run: pnpm build
+      - run: supabase start
       - run: pnpm db:reset
       - run: pnpm db:test
       - run: pnpm db:types:verify
+      - if: ${{ always() }}
+        run: supabase stop --no-backup
