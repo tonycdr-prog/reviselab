@@ -50,6 +50,24 @@ jobs:
           GROBID_URL: ${{ secrets.GROBID_URL }}
       - run: pnpm prod:check
       - run: pnpm dev:hosted:check
+      - name: Start hosted worker
+        run: |
+          pnpm --filter @reviselab/worker dev > .hosted-worker.log 2>&1 &
+          echo "$!" > .hosted-worker.pid
+          sleep 5
+          if ! kill -0 "$(cat .hosted-worker.pid)" 2>/dev/null; then
+            cat .hosted-worker.log
+            exit 1
+          fi
       - run: pnpm smoke:hosted
       - if: ${{ inputs.include_pdf == 'true' }}
         run: pnpm smoke:hosted:pdf
+      - name: Print hosted worker log on failure
+        if: ${{ failure() }}
+        run: tail -200 .hosted-worker.log || true
+      - name: Stop hosted worker
+        if: ${{ always() }}
+        run: |
+          if [ -f .hosted-worker.pid ]; then
+            kill "$(cat .hosted-worker.pid)" 2>/dev/null || true
+          fi
