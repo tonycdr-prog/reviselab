@@ -7,6 +7,9 @@ primary_region = "iad"
 [processes]
   app = "./grobid-service/bin/grobid-service"
 
+[env]
+  JAVA_TOOL_OPTIONS = "-XX:-UseContainerSupport"
+
 [http_service]
   internal_port = 8070
   force_https = true

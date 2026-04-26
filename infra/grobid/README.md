@@ -25,6 +25,7 @@ GROBID_URL=https://<your-grobid-app>.fly.dev
 
 - Image: `grobid/grobid:0.8.2-crf`
 - Process: `./grobid-service/bin/grobid-service`
+- JVM options: `JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport`
 - Health check: `GET /api/isalive`
 - Parser endpoint: `POST /api/processFulltextDocument`
 - Initial sizing: 2 shared CPUs, 4 GB memory, one always-running machine
@@ -34,5 +35,6 @@ GROBID_URL=https://<your-grobid-app>.fly.dev
 ## CI behavior
 
 The hosted smoke workflow starts the same GROBID image inside GitHub Actions
-when `include_pdf=true`. Production worker deployments should use the hosted
-`GROBID_URL` endpoint instead.
+when `include_pdf=true` and applies the same JVM container-support override as
+the Fly config. Production worker deployments should use the hosted `GROBID_URL`
+endpoint instead.

@@ -51,6 +51,8 @@ use that as the production go/no-go.
 ## Hosted GROBID
 
 - Default image: `grobid/grobid:0.8.2-crf`, matching local development and CI.
+- JVM options: `JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport` to avoid JVM
+  cgroup metrics crashes on hosted container runtimes.
 - Health check: `GET /api/isalive`.
 - Parser endpoint: `POST /api/processFulltextDocument`.
 - Initial Fly.io sizing: 2 shared CPUs, 4 GB memory, one always-running
