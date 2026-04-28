@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
-import { createSampleReview } from "@reviselab/core";
+import { buildReviewProgress, createSampleReview } from "@reviselab/core";
 import { ReviewWorkspaceRecipe } from "@reviselab/ui";
 
 describe("ReviewWorkspaceRecipe", () => {
@@ -147,6 +147,26 @@ describe("ReviewWorkspaceRecipe", () => {
     );
   });
 
+  test("does not act on the first suggestion when the route anchor is stale", () => {
+    const review = createSampleReview();
+
+    render(
+      <ReviewWorkspaceRecipe
+        review={review}
+        selectedTab="files"
+        selectedFilePath="abstract.md"
+        selectedAnchorId="anchor_does_not_exist"
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "Select a diff block to inspect the linked suggestion and action controls.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Suggested revision")).toBe(null);
+  });
+
   test("keeps the files tab stable when a review loses generated file diffs", () => {
     const review = createSampleReview();
     const { rerender } = render(
@@ -169,5 +189,61 @@ describe("ReviewWorkspaceRecipe", () => {
         "No file diffs have been generated for this review yet.",
       ),
     ).toBeInTheDocument();
+  });
+
+  test.each([
+    ["parse-queued", "Queued"],
+    ["parsing", "Parsing"],
+    ["review-queued", "Review queued"],
+    ["reviewing", "Reviewing"],
+    ["failed-parse", "Parsing failed"],
+    ["failed-review", "Review failed"],
+  ])("renders explicit progress state for %s reviews", (_stage, label) => {
+    const review = createSampleReview();
+    const progress =
+      label === "Queued"
+        ? buildReviewProgress({
+            parseStatus: "queued",
+            reviewStatus: "queued",
+          })
+        : label === "Parsing"
+          ? buildReviewProgress({
+              parseStatus: "processing",
+              reviewStatus: "queued",
+            })
+          : label === "Review queued"
+            ? buildReviewProgress({
+                parseStatus: "parsed",
+                reviewStatus: "queued",
+              })
+            : label === "Reviewing"
+              ? buildReviewProgress({
+                  parseStatus: "parsed",
+                  reviewStatus: "processing",
+                })
+              : label === "Parsing failed"
+                ? buildReviewProgress({
+                    parseStatus: "failed",
+                    reviewStatus: "queued",
+                    parseError: "GROBID is unavailable.",
+                  })
+                : buildReviewProgress({
+                    parseStatus: "parsed",
+                    reviewStatus: "failed",
+                    reviewError: "Review worker failed.",
+                  });
+
+    render(
+      <ReviewWorkspaceRecipe
+        review={{
+          ...review,
+          status: progress.reviewStatus,
+          progress,
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Review progress")).toBeInTheDocument();
   });
 });

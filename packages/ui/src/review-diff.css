@@ -4,12 +4,12 @@
   inline-size: 100%;
   max-inline-size: 100%;
   min-inline-size: 0;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 .rl-file-rail {
   align-self: start;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .rl-file-rail-header {
@@ -66,17 +66,13 @@
   margin-inline-end: 0;
 }
 
-.rl-diff-toolbar {
-  display: grid;
-  gap: var(--cds-spacing-05);
-}
-
 .rl-diff-block {
   display: grid;
   gap: var(--cds-spacing-04);
   min-inline-size: 0;
   max-inline-size: 100%;
   overflow: hidden;
+  contain: inline-size;
 }
 
 .rl-diff-block-highlighted {
@@ -169,7 +165,8 @@
 
 .rl-context-panel {
   align-self: start;
-  overflow: hidden;
+  min-inline-size: 0;
+  overflow: visible;
 }
 
 .rl-context-panel > .rl-section,
@@ -198,8 +195,10 @@
 .rl-suggestion-actions {
   display: grid;
   gap: var(--cds-spacing-03);
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   align-items: stretch;
+  padding-block: var(--cds-spacing-03);
+  background: var(--cds-layer);
 }
 
 .rl-suggestion-actions .cds--btn {
@@ -222,7 +221,7 @@
   .rl-diff-workspace {
     grid-template-columns:
       minmax(12rem, 16rem)
-      minmax(34rem, 1fr)
+      minmax(0, 1fr)
       minmax(18rem, 24rem);
   }
 

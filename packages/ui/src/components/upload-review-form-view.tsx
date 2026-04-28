@@ -1,23 +1,30 @@
 "use client";
 
-import {
-  PAPER_TYPES,
-  getPaperTypeLabel,
-  type PaperType,
-} from "@reviselab/core";
-
-import {
-  Button,
-  Checkbox,
-  FileUploader,
-  InlineNotification,
-  Select,
-  SelectItem,
-  TextArea,
-  TextInput,
-  Tile,
-} from "../carbon";
+import { Button, InlineNotification, Tile } from "../carbon";
+import { UploadReviewFormSections } from "./upload-review-form-sections";
 import type { UploadReviewFormViewProps } from "./upload-review-form-types";
+
+function getStatusMessage(status: UploadReviewFormViewProps["status"]) {
+  switch (status) {
+    case "uploading":
+      return {
+        title: "Uploading manuscript",
+        description: "Uploading the source file and submission context.",
+      };
+    case "creating-review":
+      return {
+        title: "Creating review",
+        description: "The paper is uploaded. Creating the review workspace.",
+      };
+    case "redirecting":
+      return {
+        title: "Opening workspace",
+        description: "The review is queued. Opening the live workspace.",
+      };
+    default:
+      return null;
+  }
+}
 
 export function UploadReviewFormView({
   title,
@@ -35,9 +42,12 @@ export function UploadReviewFormView({
   aiDisclosureText,
   comments,
   selectedFileName,
+  selectedFileSize,
+  status = "idle",
   isSubmitting,
   error,
   isFormReady,
+  validationMessages = {},
   onTitleChange,
   onAbstractChange,
   onIntendedCategoryChange,
@@ -53,8 +63,11 @@ export function UploadReviewFormView({
   onAiDisclosureTextChange,
   onCommentsChange,
   onFileChange,
+  onRemoveFile,
   onSubmit,
 }: UploadReviewFormViewProps) {
+  const statusMessage = getStatusMessage(status);
+
   return (
     <Tile className="rl-section rl-upload-form-card">
       <div>
@@ -74,158 +87,63 @@ export function UploadReviewFormView({
         />
       ) : null}
 
-      <TextInput
-        id="title"
-        labelText="Title"
-        placeholder="A concise, category-appropriate title"
-        value={title}
-        onChange={(event) => onTitleChange(event.currentTarget.value)}
-      />
-      <TextArea
-        id="abstract"
-        labelText="Abstract"
-        placeholder="Paste the abstract you plan to submit for review."
-        rows={6}
-        value={abstract}
-        onChange={(event) => onAbstractChange(event.currentTarget.value)}
-      />
-      <TextInput
-        id="category"
-        labelText="Intended category"
-        helperText="ReviseLab v1 is arXiv-first. Start with a CS/AI category such as cs.AI, cs.LG, cs.CL, cs.CV, cs.RO, cs.MA, or cs.CY."
-        value={intendedCategory}
-        onChange={(event) =>
-          onIntendedCategoryChange(event.currentTarget.value)
-        }
-      />
-      <Select
-        id="paperType"
-        labelText="Paper type"
-        value={paperType}
-        onChange={(event) =>
-          onPaperTypeChange(event.currentTarget.value as PaperType)
-        }
-      >
-        {PAPER_TYPES.map((value) => (
-          <SelectItem
-            key={value}
-            value={value}
-            text={getPaperTypeLabel(value)}
-          />
-        ))}
-      </Select>
+      {statusMessage ? (
+        <InlineNotification
+          kind="info"
+          lowContrast
+          hideCloseButton
+          title={statusMessage.title}
+          subtitle={statusMessage.description}
+        />
+      ) : null}
 
-      <Checkbox
-        id="firstTimeSubmitter"
-        labelText="I’m a first-time submitter in this category"
-        checked={firstTimeSubmitter}
-        onChange={(_, { checked }) =>
-          onFirstTimeSubmitterChange(Boolean(checked))
-        }
-      />
-      <Checkbox
-        id="hasInstitutionalEmail"
-        labelText="My arXiv account uses an institutional email"
-        checked={hasInstitutionalEmail}
-        onChange={(_, { checked }) =>
-          onHasInstitutionalEmailChange(Boolean(checked))
-        }
-      />
-      <Checkbox
-        id="priorArxivAuthorship"
-        labelText="I have prior arXiv authorship in this endorsement domain"
-        checked={priorArxivAuthorship}
-        onChange={(_, { checked }) =>
-          onPriorArxivAuthorshipChange(Boolean(checked))
-        }
-      />
-      <Checkbox
-        id="hasPersonalEndorser"
-        labelText="I have a personal endorser plan if automatic endorsement does not apply"
-        checked={hasPersonalEndorser}
-        onChange={(_, { checked }) =>
-          onHasPersonalEndorserChange(Boolean(checked))
-        }
-      />
-
-      <TextInput
-        id="peerReviewedVenue"
-        labelText="Peer-reviewed venue"
-        helperText="Required for CS review, survey, or position papers."
-        placeholder="Journal or conference name"
-        value={peerReviewedVenue}
-        onChange={(event) =>
-          onPeerReviewedVenueChange(event.currentTarget.value)
-        }
-      />
-      <TextInput
-        id="journalRef"
-        labelText="Journal reference"
-        placeholder="Proceedings or journal citation"
-        value={journalRef}
-        onChange={(event) => onJournalRefChange(event.currentTarget.value)}
-      />
-      <TextInput
-        id="doi"
-        labelText="DOI"
-        placeholder="10.xxxx/example"
-        value={doi}
-        onChange={(event) => onDoiChange(event.currentTarget.value)}
-      />
-
-      <Checkbox
-        id="aiAssistanceUsed"
-        labelText="Significant generative AI language-tool assistance was used"
-        checked={aiAssistanceUsed}
-        onChange={(_, { checked }) =>
-          onAiAssistanceUsedChange(Boolean(checked))
-        }
-      />
-      <TextArea
-        id="aiDisclosureText"
-        labelText="AI disclosure text"
-        helperText="Use this for significant text-to-text generative AI assistance. Do not list AI tools as authors."
-        rows={3}
-        value={aiDisclosureText}
-        onChange={(event) =>
-          onAiDisclosureTextChange(event.currentTarget.value)
-        }
-      />
-      <TextArea
-        id="comments"
-        labelText="Submission comments"
-        helperText="For arXiv metadata, include page/figure counts and publication context where relevant."
-        rows={3}
-        value={comments}
-        onChange={(event) => onCommentsChange(event.currentTarget.value)}
-      />
-
-      <FileUploader
-        accept={[".pdf", ".zip"]}
-        buttonKind="tertiary"
-        buttonLabel={
-          selectedFileName ? "Replace manuscript" : "Upload manuscript"
-        }
-        filenameStatus="edit"
-        labelTitle="Manuscript source"
-        labelDescription="Upload a PDF or LaTeX ZIP. Title and abstract are required for the first review pass."
-        multiple={false}
-        size="md"
-        onChange={(event, data) => {
-          const fileInput = event.currentTarget as HTMLInputElement;
-          onFileChange(
-            fileInput.files?.[0] ?? data?.currentFiles[0]?.file ?? null,
-          );
-        }}
+      <UploadReviewFormSections
+        title={title}
+        abstract={abstract}
+        intendedCategory={intendedCategory}
+        paperType={paperType}
+        firstTimeSubmitter={firstTimeSubmitter}
+        priorArxivAuthorship={priorArxivAuthorship}
+        hasInstitutionalEmail={hasInstitutionalEmail}
+        hasPersonalEndorser={hasPersonalEndorser}
+        peerReviewedVenue={peerReviewedVenue}
+        journalRef={journalRef}
+        doi={doi}
+        aiAssistanceUsed={aiAssistanceUsed}
+        aiDisclosureText={aiDisclosureText}
+        comments={comments}
+        isSubmitting={isSubmitting}
+        validationMessages={validationMessages}
+        onTitleChange={onTitleChange}
+        onAbstractChange={onAbstractChange}
+        onIntendedCategoryChange={onIntendedCategoryChange}
+        onPaperTypeChange={onPaperTypeChange}
+        onFirstTimeSubmitterChange={onFirstTimeSubmitterChange}
+        onPriorArxivAuthorshipChange={onPriorArxivAuthorshipChange}
+        onHasInstitutionalEmailChange={onHasInstitutionalEmailChange}
+        onHasPersonalEndorserChange={onHasPersonalEndorserChange}
+        onPeerReviewedVenueChange={onPeerReviewedVenueChange}
+        onJournalRefChange={onJournalRefChange}
+        onDoiChange={onDoiChange}
+        onAiAssistanceUsedChange={onAiAssistanceUsedChange}
+        onAiDisclosureTextChange={onAiDisclosureTextChange}
+        onCommentsChange={onCommentsChange}
+        onFileChange={onFileChange}
+        {...(onRemoveFile ? { onRemoveFile } : {})}
+        {...(selectedFileName ? { selectedFileName } : {})}
+        {...(typeof selectedFileSize === "number" ? { selectedFileSize } : {})}
       />
 
       <div className="rl-upload-actions">
         <Button onClick={onSubmit} disabled={isSubmitting || !isFormReady}>
           {isSubmitting ? "Generating review…" : "Generate review"}
         </Button>
-        {selectedFileName ? (
-          <span className="rl-muted">Attached: {selectedFileName}</span>
-        ) : null}
+        <span className="rl-muted" aria-live="polite">
+          {statusMessage?.description ??
+            (isFormReady
+              ? "Ready to generate a review workspace."
+              : "Add a title, abstract, and source file to continue.")}
+        </span>
       </div>
     </Tile>
   );

@@ -13,6 +13,14 @@ import {
 } from "../carbon";
 import { ReviewStageTag } from "./review-stage-tag";
 
+const PROGRESS_STEPS = [
+  { stage: "parse-queued", label: "Parse queued" },
+  { stage: "parsing", label: "Parsing manuscript" },
+  { stage: "review-queued", label: "Review queued" },
+  { stage: "reviewing", label: "Running checks" },
+  { stage: "ready", label: "Ready" },
+] as const;
+
 type ReviewWorkspaceProgressProps = {
   review: ReviewSnapshot;
   isRetryingReview: boolean;
@@ -26,6 +34,24 @@ export function ReviewWorkspaceProgress({
   actionError = null,
   onRetryReview,
 }: ReviewWorkspaceProgressProps) {
+  const isFailure =
+    review.progress.stage === "failed-parse" ||
+    review.progress.stage === "failed-review";
+  const retryLabel =
+    review.progress.stage === "failed-parse" ? "Retry parsing" : "Retry review";
+  const progressSteps = isFailure
+    ? [
+        ...PROGRESS_STEPS,
+        {
+          stage: review.progress.stage,
+          label:
+            review.progress.stage === "failed-parse"
+              ? "Parsing failed"
+              : "Review failed",
+        },
+      ]
+    : PROGRESS_STEPS;
+
   return (
     <Grid fullWidth className="rl-page-grid">
       <Column sm={4} md={8} lg={16}>
@@ -39,8 +65,7 @@ export function ReviewWorkspaceProgress({
           </div>
           {isRetryingReview ? (
             <InlineLoading description="Retrying this review" status="active" />
-          ) : review.progress.stage === "failed-parse" ||
-            review.progress.stage === "failed-review" ? (
+          ) : isFailure ? (
             <InlineNotification
               lowContrast
               kind="error"
@@ -53,6 +78,26 @@ export function ReviewWorkspaceProgress({
               status="active"
             />
           )}
+          <ol className="rl-progress-steps" aria-label="Review progress">
+            {progressSteps.map((step) => {
+              const isCurrent = step.stage === review.progress.stage;
+              const isReady = review.progress.stage === "ready";
+
+              return (
+                <li
+                  key={step.stage}
+                  className={
+                    isCurrent || isReady
+                      ? "rl-progress-step rl-progress-step-current"
+                      : "rl-progress-step"
+                  }
+                >
+                  <span>{step.label}</span>
+                  {isCurrent ? <strong>Current</strong> : null}
+                </li>
+              );
+            })}
+          </ol>
           <DataTableSkeleton
             columnCount={4}
             rowCount={4}
@@ -72,7 +117,7 @@ export function ReviewWorkspaceProgress({
                 disabled={isRetryingReview}
                 onClick={onRetryReview}
               >
-                Retry review
+                {retryLabel}
               </Button>
             </div>
           ) : null}

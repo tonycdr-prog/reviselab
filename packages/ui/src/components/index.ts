@@ -8,3 +8,4 @@ export * from "./review-status-tag";
 export * from "./review-workspace-recipe";
 export * from "./suggested-text-editor";
 export * from "./upload-review-form-view";
+export type * from "./upload-review-form-types";

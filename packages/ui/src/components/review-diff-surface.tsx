@@ -54,13 +54,14 @@ export function ReviewDiffSurface({
         (suggestion) => suggestion.filePath === selectedFile.path,
       )
     : [];
-  const activeSuggestion = selectedFile
-    ? (fileSuggestions.find(
+  const selectedAnchorSuggestion = selectedAnchorId
+    ? fileSuggestions.find(
         (suggestion) => suggestion.anchor.id === selectedAnchorId,
-      ) ??
-      fileSuggestions[0] ??
-      null)
-    : null;
+      )
+    : undefined;
+  const activeSuggestion = selectedAnchorId
+    ? (selectedAnchorSuggestion ?? null)
+    : (fileSuggestions[0] ?? null);
 
   useEffect(() => {
     if (!activeSuggestion) {
@@ -135,9 +136,7 @@ export function ReviewDiffSurface({
           <DiffSurfaceAdapter
             file={selectedFile}
             suggestions={fileSuggestions}
-            selectedAnchorId={
-              activeSuggestion?.anchor.id ?? selectedAnchorId ?? null
-            }
+            selectedAnchorId={selectedAnchorId ?? null}
             viewType={viewType}
             onSelectSuggestion={onSelectSuggestion}
           />

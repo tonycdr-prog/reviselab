@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { ReviewSuggestion } from "@reviselab/core";
 
-import { Button, InlineNotification, TextArea, Tile } from "../carbon";
+import {
+  Button,
+  InlineLoading,
+  InlineNotification,
+  TextArea,
+  Tile,
+} from "../carbon";
 import { ReviewAILabel } from "./review-ai-label";
 
 type SuggestedTextEditorProps = {
@@ -28,6 +34,7 @@ export function SuggestedTextEditor({
   onResolve,
   onRestore,
 }: SuggestedTextEditorProps) {
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const [draft, setDraft] = useState(
     suggestion.editedText ?? suggestion.suggestedText,
   );
@@ -50,6 +57,8 @@ export function SuggestedTextEditor({
     typeof suggestion.editedText === "string";
   const restoreLabel =
     suggestion.origin === "ai" ? "Restore AI suggestion" : "Restore suggestion";
+  const restoreUnavailableLabel =
+    suggestion.origin === "ai" ? "Restore AI suggestion" : "Restore suggestion";
   const terminalStatusMessage =
     suggestion.status === "accepted"
       ? "Suggestion accepted. Restore it to reopen review actions."
@@ -67,7 +76,7 @@ export function SuggestedTextEditor({
     if (
       isTerminalStatus ||
       suggestion.status === "edited" ||
-      suggestion.editedText
+      typeof suggestion.editedText === "string"
     ) {
       onRestore?.();
     }
@@ -86,19 +95,12 @@ export function SuggestedTextEditor({
         !canRestoreSuggestion ? (
           <ReviewAILabel explainability={explainability} showModelDetails />
         ) : null}
-        {canRestoreSuggestion && !isTerminalStatus ? (
-          <Button
-            kind="ghost"
-            size="sm"
-            type="button"
-            onClick={handleRestoreSuggestion}
-          >
-            {restoreLabel}
-          </Button>
-        ) : null}
       </div>
 
       <div className="rl-suggestion-actions" aria-label="Suggestion actions">
+        {isPending ? (
+          <InlineLoading description="Updating suggestion" status="active" />
+        ) : null}
         {isTerminalStatus ? (
           <>
             <span className="rl-muted">{terminalStatusMessage}</span>
@@ -141,10 +143,40 @@ export function SuggestedTextEditor({
               size="sm"
               type="button"
               disabled={isPending}
+              onClick={() => textAreaRef.current?.focus()}
+            >
+              Edit suggestion
+            </Button>
+            <Button
+              kind="tertiary"
+              size="sm"
+              type="button"
+              disabled={isPending}
               onClick={() => onResolve?.()}
             >
               Mark resolved
             </Button>
+            {canRestoreSuggestion ? (
+              <Button
+                kind="ghost"
+                size="sm"
+                type="button"
+                disabled={isPending}
+                onClick={handleRestoreSuggestion}
+              >
+                {restoreLabel}
+              </Button>
+            ) : (
+              <Button
+                kind="ghost"
+                size="sm"
+                type="button"
+                disabled
+                title="Restore is available after editing or taking an action."
+              >
+                {restoreUnavailableLabel}
+              </Button>
+            )}
           </>
         )}
       </div>
@@ -157,6 +189,7 @@ export function SuggestedTextEditor({
         <div>
           <TextArea
             id={suggestion.id}
+            ref={textAreaRef}
             labelText="Suggested revision"
             value={draft}
             rows={8}

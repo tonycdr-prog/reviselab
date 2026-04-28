@@ -1,5 +1,11 @@
 import type { PaperType } from "@reviselab/core";
 
+export type UploadReviewFormStatus =
+  | "idle"
+  | "uploading"
+  | "creating-review"
+  | "redirecting";
+
 export type UploadReviewFormViewProps = {
   title: string;
   abstract: string;
@@ -16,9 +22,12 @@ export type UploadReviewFormViewProps = {
   aiDisclosureText: string;
   comments: string;
   selectedFileName?: string;
+  selectedFileSize?: number;
+  status?: UploadReviewFormStatus;
   isSubmitting: boolean;
   error?: string | null;
   isFormReady: boolean;
+  validationMessages?: Partial<Record<"title" | "abstract" | "file", string>>;
   onTitleChange: (value: string) => void;
   onAbstractChange: (value: string) => void;
   onIntendedCategoryChange: (value: string) => void;
@@ -34,5 +43,6 @@ export type UploadReviewFormViewProps = {
   onAiDisclosureTextChange: (value: string) => void;
   onCommentsChange: (value: string) => void;
   onFileChange: (file: File | null) => void;
+  onRemoveFile?: () => void;
   onSubmit: () => void;
 };

@@ -25,17 +25,6 @@ export type ReviewFileRailProps = {
   onSelectFile: (path: ReviewFile["path"]) => void;
 };
 
-export type ReviewDiffToolbarProps = {
-  file: ReviewFile;
-  activeSuggestion: ReviewSuggestion | null;
-  editedText: string | null;
-  isPending: boolean;
-  onApply: (suggestion: ReviewSuggestion, editedText: string) => void;
-  onReject: (suggestion: ReviewSuggestion) => void;
-  onResolve: (suggestion: ReviewSuggestion) => void;
-  onRestore: (suggestion: ReviewSuggestion) => void;
-};
-
 export type DiffRendererAdapterProps = {
   suggestion: ReviewSuggestion;
   viewType: "split" | "unified";

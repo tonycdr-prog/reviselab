@@ -32,6 +32,8 @@ export default function PreviewUploadFormPage() {
           aiDisclosureText=""
           comments="12 pages, 3 figures."
           selectedFileName="manuscript.zip"
+          selectedFileSize={842_112}
+          status="idle"
           isSubmitting={false}
           error={null}
           isFormReady
@@ -50,6 +52,7 @@ export default function PreviewUploadFormPage() {
           onAiDisclosureTextChange={() => undefined}
           onCommentsChange={() => undefined}
           onFileChange={() => undefined}
+          onRemoveFile={() => undefined}
           onSubmit={() => undefined}
         />
       </Column>
