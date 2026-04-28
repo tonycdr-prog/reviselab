@@ -102,6 +102,29 @@ a {
   white-space: nowrap;
 }
 
+.rl-progress-steps {
+  display: grid;
+  gap: var(--cds-spacing-03);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rl-progress-step {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--cds-spacing-04);
+  padding: var(--cds-spacing-03) var(--cds-spacing-04);
+  border: 1px solid var(--cds-border-subtle);
+  color: var(--cds-text-secondary);
+}
+
+.rl-progress-step-current {
+  border-color: var(--cds-border-interactive);
+  color: var(--cds-text-primary);
+  box-shadow: inset 0 0 0 1px var(--cds-border-interactive);
+}
+
 .rl-dashboard-toolbar {
   min-block-size: auto;
   padding-block: var(--cds-spacing-05);

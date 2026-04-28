@@ -90,6 +90,30 @@ test("full-width diff workbench has one action surface and no page overflow", as
       .getByLabel("Review context inspector")
       .getByRole("button", { name: "Apply suggestion" }),
   ).toHaveCount(1);
+  await expect(
+    page
+      .getByLabel("Review context inspector")
+      .getByRole("button", { name: "Edit suggestion" }),
+  ).toHaveCount(1);
+  await expect(
+    page
+      .getByLabel("Review context inspector")
+      .getByRole("button", { name: /Restore (AI )?suggestion/ }),
+  ).toHaveCount(1);
+  await expectNoHorizontalOverflow(page);
+});
+
+test("file selection route does not force an initial deep scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/preview/review-workspace?tab=files&file=abstract.md");
+
+  await expect(page.getByRole("tab", { selected: true })).toHaveText(
+    "Files changed",
+  );
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBeLessThanOrEqual(16);
   await expectNoHorizontalOverflow(page);
 });
 
@@ -112,8 +136,10 @@ test("upload preview exposes stable file and submit affordances", async ({
   await page.goto("/preview/upload-form");
 
   await expect(
-    page.locator("button").filter({ hasText: "Replace manuscript" }),
+    page.locator("button").filter({ hasText: "Choose different file" }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove file" })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("manuscript.zip");
   await expect(
     page.getByRole("button", { name: "Generate review" }),
   ).toBeEnabled();

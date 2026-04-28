@@ -10,7 +10,6 @@ import {
 } from "react-diff-view";
 
 import { Button, Tag, Tile } from "../carbon";
-import { ReviewAILabel } from "./review-ai-label";
 import { InlineDiffPreview } from "./review-inline-diff-preview";
 import type {
   DiffRendererAdapterProps,
@@ -48,7 +47,6 @@ export function DiffRendererAdapter({
 }: DiffRendererAdapterProps) {
   const tileRef = useRef<HTMLDivElement | null>(null);
   const nextText = suggestion.editedText ?? suggestion.suggestedText;
-  const explainability = suggestion.explainability;
   const parsed = useMemo(() => {
     const diffText = buildPatchText(
       suggestion,
@@ -99,11 +97,6 @@ export function DiffRendererAdapter({
           <p className="rl-muted">{suggestion.rationale}</p>
         </div>
         <div className="rl-toolbar">
-          {suggestion.origin === "ai" &&
-          explainability &&
-          !suggestion.editedText ? (
-            <ReviewAILabel explainability={explainability} />
-          ) : null}
           <Tag type={getSeverityTagType(suggestion.severity)}>
             {suggestion.severity}
           </Tag>

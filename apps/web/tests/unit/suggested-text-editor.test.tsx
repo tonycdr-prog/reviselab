@@ -62,6 +62,12 @@ describe("SuggestedTextEditor", () => {
 
     expect(screen.getAllByText("AI")[0]).toBeInTheDocument();
     expect(
+      screen.getByRole("button", { name: "Edit suggestion" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Restore AI suggestion" }),
+    ).toBeDisabled();
+    expect(
       screen.getByText("Generated from the title and abstract."),
     ).toBeInTheDocument();
     expect(screen.getByText(/Generated 22 Apr 2026/i)).toBeInTheDocument();
@@ -77,6 +83,31 @@ describe("SuggestedTextEditor", () => {
           ...suggestion,
           status: "edited",
           editedText: "Saved custom abstract",
+        }}
+        onRestore={onRestore}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Restore AI suggestion" }),
+    );
+
+    expect(onRestore).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Suggested revision")).toHaveValue(
+      "Suggested abstract",
+    );
+  });
+
+  test("persists restore when the saved custom draft is empty text", async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+
+    render(
+      <SuggestedTextEditor
+        suggestion={{
+          ...suggestion,
+          status: "edited",
+          editedText: "",
         }}
         onRestore={onRestore}
       />,

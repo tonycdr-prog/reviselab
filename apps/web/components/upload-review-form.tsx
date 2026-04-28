@@ -4,53 +4,15 @@ import { useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import type { PaperType } from "@reviselab/core";
+import type { UploadReviewFormStatus } from "@reviselab/ui";
 import { UploadReviewFormView } from "@reviselab/ui";
-
-type UploadResponse = {
-  paperId: string;
-  versionId: string;
-};
-
-type ReviewResponse = {
-  reviewId: string;
-};
-
-const REQUEST_TIMEOUT_MS = 45_000;
-
-async function readApiError(response: Response, fallback: string) {
-  try {
-    const body = (await response.json()) as { error?: string };
-    return body.error ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-async function fetchWithTimeout(
-  input: RequestInfo | URL,
-  init: RequestInit,
-  timeoutMessage: string,
-) {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => {
-    controller.abort();
-  }, REQUEST_TIMEOUT_MS);
-
-  try {
-    return await fetch(input, {
-      ...init,
-      signal: controller.signal,
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error(timeoutMessage);
-    }
-
-    throw error;
-  } finally {
-    window.clearTimeout(timeoutId);
-  }
-}
+import {
+  fetchWithTimeout,
+  getValidationMessages,
+  readApiError,
+  type ReviewResponse,
+  type UploadResponse,
+} from "./upload-review-form-helpers";
 
 export function UploadReviewForm() {
   const router = useRouter();
@@ -69,16 +31,43 @@ export function UploadReviewForm() {
   const [aiDisclosureText, setAiDisclosureText] = useState("");
   const [comments, setComments] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [status, setStatus] = useState<UploadReviewFormStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const isSubmitting = status !== "idle";
   const isFormReady =
     title.trim().length > 0 &&
     abstract.trim().length > 0 &&
     selectedFile !== null;
+  const validationMessages = hasAttemptedSubmit
+    ? getValidationMessages(title, abstract, selectedFile)
+    : {};
+
+  function handleFieldChange<T>(setter: (value: T) => void) {
+    return (value: T) => {
+      setter(value);
+      if (error) {
+        setError(null);
+      }
+    };
+  }
 
   async function handleSubmit() {
+    if (isSubmitting) {
+      return;
+    }
+
+    setHasAttemptedSubmit(true);
+
+    if (!isFormReady) {
+      setError(
+        "Add a title, abstract, and PDF or LaTeX ZIP before generating a review.",
+      );
+      return;
+    }
+
     setError(null);
-    setIsSubmitting(true);
+    setStatus("uploading");
 
     try {
       const uploadForm = new FormData();
@@ -114,6 +103,8 @@ export function UploadReviewForm() {
       }
 
       const uploadData = (await uploadResponse.json()) as UploadResponse;
+
+      setStatus("creating-review");
 
       const reviewResponse = await fetchWithTimeout(
         `/api/papers/${uploadData.paperId}/reviews`,
@@ -155,6 +146,8 @@ export function UploadReviewForm() {
 
       const reviewData = (await reviewResponse.json()) as ReviewResponse;
 
+      setStatus("redirecting");
+
       startTransition(() => {
         router.push(
           `/papers/${uploadData.paperId}/reviews/${reviewData.reviewId}`,
@@ -166,8 +159,7 @@ export function UploadReviewForm() {
           ? submissionError.message
           : "Something went wrong while creating the review.",
       );
-    } finally {
-      setIsSubmitting(false);
+      setStatus("idle");
     }
   }
 
@@ -187,26 +179,40 @@ export function UploadReviewForm() {
       aiAssistanceUsed={aiAssistanceUsed}
       aiDisclosureText={aiDisclosureText}
       comments={comments}
+      status={status}
       isSubmitting={isSubmitting}
       error={error}
       isFormReady={isFormReady}
-      onTitleChange={setTitle}
-      onAbstractChange={setAbstract}
-      onIntendedCategoryChange={setIntendedCategory}
-      onPaperTypeChange={setPaperType}
-      onFirstTimeSubmitterChange={setFirstTimeSubmitter}
-      onPriorArxivAuthorshipChange={setPriorArxivAuthorship}
-      onHasInstitutionalEmailChange={setHasInstitutionalEmail}
-      onHasPersonalEndorserChange={setHasPersonalEndorser}
-      onPeerReviewedVenueChange={setPeerReviewedVenue}
-      onJournalRefChange={setJournalRef}
-      onDoiChange={setDoi}
-      onAiAssistanceUsedChange={setAiAssistanceUsed}
-      onAiDisclosureTextChange={setAiDisclosureText}
-      onCommentsChange={setComments}
-      onFileChange={setSelectedFile}
+      validationMessages={validationMessages}
+      onTitleChange={handleFieldChange(setTitle)}
+      onAbstractChange={handleFieldChange(setAbstract)}
+      onIntendedCategoryChange={handleFieldChange(setIntendedCategory)}
+      onPaperTypeChange={handleFieldChange(setPaperType)}
+      onFirstTimeSubmitterChange={handleFieldChange(setFirstTimeSubmitter)}
+      onPriorArxivAuthorshipChange={handleFieldChange(setPriorArxivAuthorship)}
+      onHasInstitutionalEmailChange={handleFieldChange(
+        setHasInstitutionalEmail,
+      )}
+      onHasPersonalEndorserChange={handleFieldChange(setHasPersonalEndorser)}
+      onPeerReviewedVenueChange={handleFieldChange(setPeerReviewedVenue)}
+      onJournalRefChange={handleFieldChange(setJournalRef)}
+      onDoiChange={handleFieldChange(setDoi)}
+      onAiAssistanceUsedChange={handleFieldChange(setAiAssistanceUsed)}
+      onAiDisclosureTextChange={handleFieldChange(setAiDisclosureText)}
+      onCommentsChange={handleFieldChange(setComments)}
+      onFileChange={handleFieldChange(setSelectedFile)}
+      onRemoveFile={() => {
+        setSelectedFile(null);
+        setHasAttemptedSubmit(false);
+        setError(null);
+      }}
       onSubmit={handleSubmit}
-      {...(selectedFile ? { selectedFileName: selectedFile.name } : {})}
+      {...(selectedFile
+        ? {
+            selectedFileName: selectedFile.name,
+            selectedFileSize: selectedFile.size,
+          }
+        : {})}
     />
   );
 }
